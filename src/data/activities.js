@@ -1,4 +1,4 @@
-const activities = [
+const intialActivities = [
   {
     ActivityID: "1",
     ActivityName: "Evening Walk",
@@ -91,4 +91,4 @@ const activities = [
   },
 ];
 
-export default activities;
+export default intialActivities;
