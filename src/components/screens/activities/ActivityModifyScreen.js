@@ -2,16 +2,16 @@ import { Text } from "react-native";
 import Screen from "../../layout/Screen";
 
 
-const TripModifyScreen = () => {
+const ActivityModifyScreen = () => {
   // Initialisations ---------------------------------
   // State -------------------------------------------
   // Handlers ----------------------------------------
   // View --------------------------------------------
   return (
     <Screen>
-        <Text>Trip modify screen</Text>
+        <Text>Activity modify screen</Text>
     </Screen>
   );
 }
 
-export default TripModifyScreen;
+export default ActivityModifyScreen;

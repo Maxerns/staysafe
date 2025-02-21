@@ -1,15 +1,15 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import TripListScreen from "../screens/trips/TripListScreen";
-import TripAddScreen from "../screens/trips/TripAddScreen";
-import TripViewScreen from "../screens/trips/TripViewScreen";
-import TripModifyScreen from "../screens/trips/TripModifyScreen";
+import ActivityListScreen from "../screens/activities/ActivityListScreen";
+import ActivityAddScreen from "../screens/activities/ActivityAddScreen";
+import ActivityViewScreen from "../screens/activities/ActivityViewScreen";
+import ActivityModifyScreen from "../screens/activities/ActivityModifyScreen";
 
 const Stack = createNativeStackNavigator();
 
 const StackNavigator = () => (
   <Stack.Navigator
-    initialRouteName="TripListScreen"
+    initialRouteName="ActivityListScreen"
     screenOptions={{
       headerStyle: {
         backgroundColor: "black",
@@ -18,24 +18,24 @@ const StackNavigator = () => (
     }}
   >
     <Stack.Screen
-      name="TripListScreen"
-      component={TripListScreen}
+      name="ActivityListScreen"
+      component={ActivityListScreen}
       options={{ headerShown: false }}
     />
     <Stack.Screen
-      name="TripAddScreen"
-      component={TripAddScreen}
-      options={{ title: "Add Trip" }}
+      name="ActivityAddScreen"
+      component={ActivityAddScreen}
+      options={{ title: "Add Activity" }}
     />
     <Stack.Screen
-      name="TripViewScreen"
-      component={TripViewScreen}
-      options={{ title: "View Trip" }}
+      name="ActivityViewScreen"
+      component={ActivityViewScreen}
+      options={{ title: "View Activity" }}
     />
     <Stack.Screen
-      name="TripModifyScreen"
-      component={TripModifyScreen}
-      options={{ title: "Modify Trip" }}
+      name="ActivityModifyScreen"
+      component={ActivityModifyScreen}
+      options={{ title: "Modify Activity" }}
     />
   </Stack.Navigator>
 );
