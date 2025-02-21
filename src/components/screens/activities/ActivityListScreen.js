@@ -1,19 +1,35 @@
+import { useState } from "react"; 
 import { Text, StyleSheet } from "react-native";
+import { ButtonTray, Button } from "../../UI/Button.js";
+import Icons from "../../UI/Icons.js";
 import ActivityList from "../../entity/trips/ActivityList";
-import activities from "../../../data/activities";
+import intialActivities from "../../../data/activities.js";
 import Screen from "../../layout/Screen";
 
-const ActivityListScreen = () => {
+const ActivityListScreen =  ({ navigation }) => {
   // Initialisations ---------------------------------
   // State -------------------------------------------
+  const [activities, setActivities] = useState(intialActivities);
   // Handlers ----------------------------------------
   const goToViewScreen = (activity) => {
     console.log(`Navigating to view activity: ${activity.ActivityID}`);
   };
+
+  const handleAdd = (activity) => setActivities([...activities, activity]);
+
+  const onAdd = (activity) => {
+    handleAdd(activity);
+    navigation.goBack();
+  };
+  
+  const goToAddScreen = () => navigation.navigate('ActivityAddScreen', { onAdd });
   // View --------------------------------------------
   return (
     <Screen>
+      <ButtonTray>
       <Text style={styles.welcome}>Welcome Back</Text>
+      <Button label="Add" icon={<Icons.Add />} onClick={goToAddScreen} />
+      </ButtonTray>
       <ActivityList activities={activities} onSelect={goToViewScreen} />
     </Screen>
   );
@@ -21,7 +37,7 @@ const ActivityListScreen = () => {
 
 const styles = StyleSheet.create({
   welcome: {
-    marginTop: 24,
+    marginTop: 16,
     marginBottom: 5,
     fontSize: 24,
     fontWeight: "bold",

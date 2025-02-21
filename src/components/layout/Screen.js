@@ -16,6 +16,7 @@ const Screen = ({children}) => {
 
 const styles = StyleSheet.create({
   screen: {
+    paddingTop: 34,
     padding: 15,
     flex: 1,
     backgroundColor: '#fff',
