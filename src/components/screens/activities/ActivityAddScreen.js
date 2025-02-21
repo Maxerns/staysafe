@@ -28,6 +28,7 @@ const defaultActivity = {
     LocationPostcode: null,
     LocationCoordinate: { lat: null, lng: null },
   },
+  ActivityETA: null,
 };
 
 const ActivityAddScreen = ({ navigation, route }) => {
@@ -38,11 +39,21 @@ const ActivityAddScreen = ({ navigation, route }) => {
   const [activity, setActivity] = useState(defaultActivity);
 
   // Handlers ----------------------------------------
-  const handleAdd = () => onAdd(activity);
+  const handleAdd = () => {
+    if (validateETA(activity.ActivityETA)) {
+      onAdd(activity);
+    } else {
+      setError("Please enter a valid ETA.");
+    }
+  };
   const handleCancel = navigation.goBack;
 
-  const handleChange = (field, value) =>
+  const handleChange = (field, value) => {
     setActivity({ ...activity, [field]: value });
+    if (field === "ActivityETA") {
+      setError(null);
+    }
+  };
 
   const handleFromChange = (field, value) =>
     setActivity({
@@ -61,6 +72,11 @@ const ActivityAddScreen = ({ navigation, route }) => {
         [field]: value,
       },
     });
+
+  const validateETA = (eta) => {
+    const date = new Date(eta);
+    return !isNaN(date.getTime());
+  };
 
   // View --------------------------------------------
   return (
@@ -143,6 +159,16 @@ const ActivityAddScreen = ({ navigation, route }) => {
               }
               style={styles.itemInput}
             />
+          </View>
+
+          <View style={styles.item}>
+            <Text style={styles.itemLabel}>ETA</Text>
+            <TextInput
+              value={activity.ActivityETA}
+              onChangeText={(value) => handleChange("ActivityETA", value)}
+              style={styles.itemInput}
+            />
+            {error && <Text style={styles.errorText}>{error}</Text>}
           </View>
 
           <ButtonTray>
