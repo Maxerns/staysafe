@@ -11,17 +11,23 @@ const ContactListScreen =  ({ navigation }) => {
   // State -------------------------------------------
   const [contacts, setContacts] = useState(intialContacts);
   // Handlers ----------------------------------------
-  const goToViewScreen = (contact) => {
-    console.log(`Navigating to view contact: ${contact.ContactID}`);
+  const handleDelete = (contact) => {
+    setContacts(contacts.filter((c) => c.ContactID !== contact.ContactID));
   };
 
   const handleAdd = (contact) => setContacts([...contacts, contact]);
+
+  const onDelete = (contact) => {
+    handleDelete(contact);
+    navigation.goBack();
+  };
 
   const onAdd = (contact) => {
     handleAdd(contact);
     navigation.goBack();
   };
   
+  const goToViewScreen = (contact) => navigation.navigate('ContactViewScreen', { contact, onDelete });
   const goToAddScreen = () => navigation.navigate('ContactAddScreen', { onAdd });
   // View --------------------------------------------
   return (
