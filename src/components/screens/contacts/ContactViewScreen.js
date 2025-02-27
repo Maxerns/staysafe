@@ -5,13 +5,14 @@ import ContactView from "../../entity/contacts/ContactView";
 
 const ActivityViewScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
-  const { contact, onDelete } = route.params;
+  const { contact, onDelete, onModify } = route.params;
   // State -------------------------------------------
   // Handlers ----------------------------------------
+  const goToModifyScreen = () => navigation.navigate('ContactModifyScreen', { contact, onModify });
   // View --------------------------------------------
   return (
     <Screen>
-        <ContactView contact={contact} onDelete={onDelete} />
+        <ContactView contact={contact} onDelete={onDelete}  onModify={goToModifyScreen} />
     </Screen>
   );
 }

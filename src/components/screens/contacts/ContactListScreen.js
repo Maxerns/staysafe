@@ -22,12 +22,21 @@ const ContactListScreen =  ({ navigation }) => {
     navigation.goBack();
   };
 
+  const onModify = (contact) => {
+    setContacts(
+      contacts.map((c) =>
+        c.ContactID === contact.ContactID ? contact : c
+      )
+    );
+    navigation.goBack();
+  };
+
   const onAdd = (contact) => {
     handleAdd(contact);
     navigation.goBack();
   };
   
-  const goToViewScreen = (contact) => navigation.navigate('ContactViewScreen', { contact, onDelete });
+  const goToViewScreen = (contact) => navigation.navigate('ContactViewScreen', { contact, onDelete, onModify });
   const goToAddScreen = () => navigation.navigate('ContactAddScreen', { onAdd });
   // View --------------------------------------------
   return (

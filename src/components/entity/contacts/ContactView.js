@@ -2,7 +2,7 @@ import { Alert, StyleSheet, Text, View } from "react-native";
 import { Button, ButtonTray } from "../../UI/Button";
 import Icons from "../../UI/Icons.js";
 
-const ContactView = ({ contact, onDelete }) => {
+const ContactView = ({ contact, onDelete, onModify }) => {
   const handleDelete = () => onDelete(contact);
 
   const requestDelete = () =>
@@ -29,7 +29,7 @@ const ContactView = ({ contact, onDelete }) => {
         </Text>
       </View>
       <ButtonTray>
-        <Button icon={<Icons.Edit />} label="Modify" />
+        <Button icon={<Icons.Edit />} label="Modify" onClick={onModify} />
         <Button
           icon={<Icons.Delete />}
           label="Delete"
