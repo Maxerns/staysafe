@@ -9,7 +9,7 @@ const ContactItem = ({contact, onSelect}) => {
     <Pressable key={contact.ContactID} onPress={() => onSelect(contact)}>
     <View style={styles.item}>
       <Text style={styles.text}>
-        {contact.ContactID} {contact.ContactName}
+        {contact.ContactLabel}
       </Text>
     </View>
   </Pressable>
