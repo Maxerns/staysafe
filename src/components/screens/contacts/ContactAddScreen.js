@@ -10,162 +10,92 @@ import {
 import Screen from "../../layout/Screen.js";
 import { ButtonTray, Button } from "../../UI/Button.js";
 import Icons from "../../UI/Icons.js";
+import intialUsers from "../../../data/users.js";
 
-const defaultActivity = {
-  ActivityID: null,
-  ActivityName: null,
-  ActivityDescription: null,
-  ActivityFrom: {
-    LocationName: null,
-    LocationAddress: null,
-    LocationPostcode: null,
-    LocationCoordinate: { lat: null, lng: null },
-  },
-  ActivityLeave: new Date().toISOString(),
-  ActivityTo: {
-    LocationName: null,
-    LocationAddress: null,
-    LocationPostcode: null,
-    LocationCoordinate: { lat: null, lng: null },
-  },
-  ActivityETA: null,
+const defaultContact = {
+  ContactID: null,
+  ContactUserID: "",
+  ContactContactID: "",
+  ContactLabel: "",
+  ContactDatecreated: new Date().toISOString(),
 };
 
-const ActivityAddScreen = ({ navigation, route }) => {
+const ContactAddScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
   const { onAdd } = route.params;
-  defaultActivity.ActivityID = Math.floor(100000 + Math.random() * 900000);
+  defaultContact.ContactID = Math.floor(100000 + Math.random() * 900000).toString();
+
   // State -------------------------------------------
-  const [activity, setActivity] = useState(defaultActivity);
+  const [contact, setContact] = useState(defaultContact);
+  const [contactUsername, setContactUsername] = useState(""); // input for the contact's username
+  const [error, setError] = useState(null);
 
   // Handlers ----------------------------------------
   const handleAdd = () => {
-    if (validateETA(activity.ActivityETA)) {
-      onAdd(activity);
-    } else {
-      setError("Please enter a valid ETA.");
+    // Basic validation: ensure both username and label are provided
+    if (!contactUsername.trim() || !contact.ContactLabel.trim()) {
+      setError("All fields are required.");
+      return;
     }
+
+    // Assume logged in user id is "1"
+    const currentUserID = "1";
+
+    // Look up the contact by username (case-insensitive)
+    const foundUser = intialUsers.find(
+      (user) => user.UserUsername.toLowerCase() === contactUsername.trim().toLowerCase()
+    );
+
+    //later: check if the user is already a contact
+    //later: check if the user is the logged in user and prevent adding self as contact
+
+    if (!foundUser) {
+      setError("User not found.");
+      return;
+    }
+
+    // Construct the new contact object
+    const newContact = {
+      ...contact,
+      ContactUserID: currentUserID,
+      ContactContactID: foundUser.UserID,
+      ContactDatecreated: new Date().toISOString(),
+    };
+
+    onAdd(newContact);
   };
+
   const handleCancel = navigation.goBack;
 
   const handleChange = (field, value) => {
-    setActivity({ ...activity, [field]: value });
-    if (field === "ActivityETA") {
+    setContact({ ...contact, [field]: value });
+    if (error) {
       setError(null);
     }
-  };
-
-  const handleFromChange = (field, value) =>
-    setActivity({
-      ...activity,
-      ActivityFrom: {
-        ...activity.ActivityFrom,
-        [field]: value,
-      },
-    });
-
-  const handleToChange = (field, value) =>
-    setActivity({
-      ...activity,
-      ActivityTo: {
-        ...activity.ActivityTo,
-        [field]: value,
-      },
-    });
-
-  const validateETA = (eta) => {
-    const date = new Date(eta);
-    return !isNaN(date.getTime());
   };
 
   // View --------------------------------------------
   return (
     <Screen>
       <KeyboardAvoidingView behavior="padding">
-        <ScrollView>
+        <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.item}>
-            <Text style={styles.itemLabel}>Activity Name</Text>
+            <Text style={styles.itemLabel}>Contact Username</Text>
             <TextInput
-              value={activity.ActivityName}
-              onChangeText={(value) => handleChange("ActivityName", value)}
+              value={contactUsername}
+              onChangeText={(value) => {
+                setContactUsername(value);
+                if (error) setError(null);
+              }}
               style={styles.itemInput}
             />
           </View>
 
           <View style={styles.item}>
-            <Text style={styles.itemLabel}>Activity Description</Text>
+            <Text style={styles.itemLabel}>Contact Label</Text>
             <TextInput
-              value={activity.ActivityDescription}
-              onChangeText={(value) =>
-                handleChange("ActivityDescription", value)
-              }
-              style={styles.itemInput}
-            />
-          </View>
-
-          <Text style={styles.sectionHeader}>From</Text>
-          <View style={styles.item}>
-            <Text style={styles.itemLabel}>Location Name</Text>
-            <TextInput
-              value={activity.ActivityFrom.LocationName}
-              onChangeText={(value) => handleFromChange("LocationName", value)}
-              style={styles.itemInput}
-            />
-          </View>
-          <View style={styles.item}>
-            <Text style={styles.itemLabel}>Location Address</Text>
-            <TextInput
-              value={activity.ActivityFrom.LocationAddress}
-              onChangeText={(value) =>
-                handleFromChange("LocationAddress", value)
-              }
-              style={styles.itemInput}
-            />
-          </View>
-          <View style={styles.item}>
-            <Text style={styles.itemLabel}>Location Postcode</Text>
-            <TextInput
-              value={activity.ActivityFrom.LocationPostcode}
-              onChangeText={(value) =>
-                handleFromChange("LocationPostcode", value)
-              }
-              style={styles.itemInput}
-            />
-          </View>
-
-          <Text style={styles.sectionHeader}>To</Text>
-          <View style={styles.item}>
-            <Text style={styles.itemLabel}>Location Name</Text>
-            <TextInput
-              value={activity.ActivityTo.LocationName}
-              onChangeText={(value) => handleToChange("LocationName", value)}
-              style={styles.itemInput}
-            />
-          </View>
-          <View style={styles.item}>
-            <Text style={styles.itemLabel}>Location Address</Text>
-            <TextInput
-              value={activity.ActivityTo.LocationAddress}
-              onChangeText={(value) => handleToChange("LocationAddress", value)}
-              style={styles.itemInput}
-            />
-          </View>
-          <View style={styles.item}>
-            <Text style={styles.itemLabel}>Location Postcode</Text>
-            <TextInput
-              value={activity.ActivityTo.LocationPostcode}
-              onChangeText={(value) =>
-                handleToChange("LocationPostcode", value)
-              }
-              style={styles.itemInput}
-            />
-          </View>
-
-          <View style={styles.item}>
-            <Text style={styles.itemLabel}>ETA</Text>
-            <TextInput
-              value={activity.ActivityETA}
-              onChangeText={(value) => handleChange("ActivityETA", value)}
+              value={contact.ContactLabel}
+              onChangeText={(value) => handleChange("ContactLabel", value)}
               style={styles.itemInput}
             />
             {error && <Text style={styles.errorText}>{error}</Text>}
@@ -182,6 +112,9 @@ const ActivityAddScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+  },
   item: {
     marginVertical: 8,
   },
@@ -199,13 +132,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "lightgrey",
   },
-  sectionHeader: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginTop: 20,
-    marginBottom: 5,
-    color: "#333",
+  errorText: {
+    color: "red",
+    marginTop: 5,
   },
 });
 
-export default ActivityAddScreen;
+export default ContactAddScreen;
