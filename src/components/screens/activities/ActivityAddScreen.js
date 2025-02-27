@@ -168,7 +168,7 @@ const ActivityAddScreen = ({ navigation, route }) => {
               onChangeText={(value) => handleChange("ActivityETA", value)}
               style={styles.itemInput}
             />
-            {error && <Text style={styles.errorText}>{error}</Text>}
+            {/* {error && <Text style={styles.errorText}>{error}</Text>} */}
           </View>
 
           <ButtonTray>
