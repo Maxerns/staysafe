@@ -20,6 +20,8 @@ const setAuthToken = (token) => {
 };
 
 export const authService = {
+  setAuthToken,
+  
   // Register a new user
   register: async (userData) => {
     try {
@@ -36,14 +38,14 @@ export const authService = {
   // Login with username and password
   login: async (credentials) => {
     try {
-    const response = await apiClient.post('/auth/login', credentials);
-    
-    if (response.data && response.data.token) {
-      const { token, user } = response.data;
+      const response = await apiClient.post('/auth/login', credentials);
       
-      // Set the token for future requests
-      setAuthToken(token);
-      
+      if (response.data && response.data.token) {
+        const { token, user } = response.data;
+        
+        // Set the token for future requests
+        setAuthToken(token);
+        
         return {
           token,
           user: {

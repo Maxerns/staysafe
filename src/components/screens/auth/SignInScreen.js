@@ -23,7 +23,7 @@ const SignInScreen = ({ navigation }) => {
 
     setIsLoading(true);
     setError("");
-    
+
     try {
       await signIn({ username, password });
       // Navigation will be handled by the auth context

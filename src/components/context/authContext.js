@@ -1,25 +1,25 @@
 import React, { createContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from '../services/authService';
+import useStore from '../store/useStore';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  const initialUserState = { token: null, info: null };
   const [isLoading, setIsLoading] = useState(true);
-  const [userToken, setUserToken] = useState(null);
-  const [userInfo, setUserInfo] = useState(null);
+  const [user, saveUser] = useStore('user', initialUserState);
 
   const signIn = async (credentials) => {
     try {
       const response = await authService.login(credentials);
-      const { token, user } = response;
+      const { token, user: userInfo } = response;
       
-      setUserToken(token);
-      setUserInfo(user);
+      const userData = {
+        token,
+        info: userInfo
+      };
       
-      await AsyncStorage.setItem('userToken', token);
-      await AsyncStorage.setItem('userInfo', JSON.stringify(user));
-      
+      await saveUser(userData);
       return response;
     } catch (error) {
       throw error;
@@ -43,36 +43,27 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signOut = async () => {
-    setUserToken(null);
-    setUserInfo(null);
-    await AsyncStorage.removeItem('userToken');
-    await AsyncStorage.removeItem('userInfo');
+    await saveUser(initialUserState);
   };
 
   const isSignedIn = () => {
-    return !!userToken;
+    return !!user.token;
   };
 
-  // Check if user is already logged in
-  const bootstrapAsync = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      const userInfoString = await AsyncStorage.getItem('userInfo');
-      
-      if (token && userInfoString) {
-        setUserToken(token);
-        setUserInfo(JSON.parse(userInfoString));
-      }
-    } catch (error) {
-      console.log('Error restoring token', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Check if user is logged in on initial load
   useEffect(() => {
-    bootstrapAsync();
+    // The loading is handled automatically by useStore
+    setIsLoading(false);
   }, []);
+
+  // Set auth token for API requests whenever user changes
+  useEffect(() => {
+    if (user.token) {
+      authService.setAuthToken(user.token);
+    } else {
+      authService.setAuthToken(null);
+    }
+  }, [user]);
 
   return (
     <AuthContext.Provider
@@ -81,8 +72,7 @@ export const AuthProvider = ({ children }) => {
         signUp,
         signOut,
         isSignedIn,
-        userToken,
-        userInfo,
+        user,
         isLoading,
       }}
     >

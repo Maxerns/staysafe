@@ -46,7 +46,7 @@ const AppStack = () => (
     <Stack.Screen
       name="ActivityListScreen"
       component={ActivityListScreen}
-      options={{ headerShown: false }}
+      options={{ title: "Activities", headerShown: false }}
     />
     <Stack.Screen
       name="ActivityAddScreen"
