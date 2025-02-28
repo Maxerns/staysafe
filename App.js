@@ -1,6 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import StackNavigator from './src/components/navigation/StackNavigator';
-
+import { AuthProvider } from './src/components/context/authContext';
 
 const App = () => {
   // Initialisations ---------------------------------
@@ -8,9 +8,11 @@ const App = () => {
   // Handlers ----------------------------------------
   // View --------------------------------------------
   return (
-    <NavigationContainer>
-      <StackNavigator />
-    </NavigationContainer>
+    <AuthProvider>
+      <NavigationContainer>
+        <StackNavigator />
+      </NavigationContainer>
+    </AuthProvider>
   );
 }
 
