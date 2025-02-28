@@ -1,12 +1,15 @@
 import React, { useContext } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import ActivityListScreen from "../screens/activities/ActivityListScreen";
+import DrawerNavigator from "./DrawerNavigator";
 import ActivityAddScreen from "../screens/activities/ActivityAddScreen";
 import ActivityViewScreen from "../screens/activities/ActivityViewScreen";
 import ActivityModifyScreen from "../screens/activities/ActivityModifyScreen";
 import SignInScreen from "../screens/auth/SignInScreen";
 import SignUpScreen from "../screens/auth/SignUpScreen";
 import { AuthContext } from "../context/authContext";
+import ContactAddScreen from "../screens/contacts/ContactAddScreen";
+import ContactViewScreen from "../screens/contacts/ContactViewScreen";
+import ContactModifyScreen from "../screens/contacts/ContactModifyScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -35,7 +38,7 @@ const AuthStack = () => (
 
 const AppStack = () => (
   <Stack.Navigator
-    initialRouteName="ActivityListScreen"
+    initialRouteName="Drawer"
     screenOptions={{
       headerStyle: {
         backgroundColor: "black",
@@ -47,6 +50,9 @@ const AppStack = () => (
       name="ActivityListScreen"
       component={ActivityListScreen}
       options={{ title: "Activities", headerShown: false }}
+      name="Drawer"
+      component={DrawerNavigator}
+      options={{ headerShown: false }}
     />
     <Stack.Screen
       name="ActivityAddScreen"
@@ -62,6 +68,22 @@ const AppStack = () => (
       name="ActivityModifyScreen"
       component={ActivityModifyScreen}
       options={{ title: "Modify Activity" }}
+    />
+
+    <Stack.Screen
+      name="ContactAddScreen"
+      component={ContactAddScreen}
+      options={{ title: "Add Contact" }}
+    />
+    <Stack.Screen
+      name="ContactViewScreen"
+      component={ContactViewScreen}
+      options={{ title: "View Contact" }}
+    />
+    <Stack.Screen
+      name="ContactModifyScreen"
+      component={ContactModifyScreen}
+      options={{ title: "Modify Contact" }}
     />
   </Stack.Navigator>
 );

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Text, StyleSheet } from "react-native";
 import { ButtonTray, Button } from "../../UI/Button.js";
 import Icons from "../../UI/Icons.js";
-import ActivityList from "../../entity/trips/ActivityList";
+import ActivityList from "../../entity/activities/ActivityList";
 import intialActivities from "../../../data/activities.js";
 import Screen from "../../layout/Screen";
 
