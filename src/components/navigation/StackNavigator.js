@@ -47,9 +47,6 @@ const AppStack = () => (
     }}
   >
     <Stack.Screen
-      name="ActivityListScreen"
-      component={ActivityListScreen}
-      options={{ title: "Activities", headerShown: false }}
       name="Drawer"
       component={DrawerNavigator}
       options={{ headerShown: false }}

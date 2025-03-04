@@ -50,7 +50,7 @@ const SignUpScreen = ({ navigation }) => {
         UserLastname: lastName,
         UserPhone: phone,
         UserUsername: username,
-        password: password,
+        UserPassword: password,
       });
       // Navigation will be handled by auth context
     } catch (error) {

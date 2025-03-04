@@ -5,17 +5,17 @@ import useStore from '../store/useStore';
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const initialUserState = { token: null, info: null };
+  const initialUserState = { isAuthenticated: false, info: null };
   const [isLoading, setIsLoading] = useState(true);
   const [user, saveUser] = useStore('user', initialUserState);
 
   const signIn = async (credentials) => {
     try {
       const response = await authService.login(credentials);
-      const { token, user: userInfo } = response;
+      const { user: userInfo } = response;
       
       const userData = {
-        token,
+        isAuthenticated: true,
         info: userInfo
       };
       
@@ -28,7 +28,13 @@ export const AuthProvider = ({ children }) => {
 
   const signUp = async (userData) => {
     try {
-      const response = await authService.register(userData);
+      const response = await authService.register({
+        ...userData,
+        UserLatitude: 0,
+        UserLongitude: 0,
+        UserTimestamp: 0,
+        UserImageURL: 'https://static.generated.photos/vue-static/face-generator/landing/wall/13.jpg',
+      });
       
       // After successful registration, automatically log in
       await signIn({
@@ -47,7 +53,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isSignedIn = () => {
-    return !!user.token;
+    return user.isAuthenticated;
   };
 
   // Check if user is logged in on initial load
@@ -55,15 +61,6 @@ export const AuthProvider = ({ children }) => {
     // The loading is handled automatically by useStore
     setIsLoading(false);
   }, []);
-
-  // Set auth token for API requests whenever user changes
-  useEffect(() => {
-    if (user.token) {
-      authService.setAuthToken(user.token);
-    } else {
-      authService.setAuthToken(null);
-    }
-  }, [user]);
 
   return (
     <AuthContext.Provider

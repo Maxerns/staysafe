@@ -16,10 +16,7 @@ const SignInScreen = ({ navigation }) => {
 
   // Handlers ----------------------------------------
   const handleSignIn = async () => {
-    if (!username || !password) {
-      setError("Please fill in all fields");
-      return;
-    }
+
 
     setIsLoading(true);
     setError("");
