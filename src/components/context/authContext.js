@@ -28,6 +28,9 @@ export const AuthProvider = ({ children }) => {
 
   const signUp = async (userData) => {
     try {
+      // Store the original password before it gets hashed
+      const plainPassword = userData.UserPassword;
+      
       const response = await authService.register({
         ...userData,
         UserLatitude: 0,
@@ -36,10 +39,10 @@ export const AuthProvider = ({ children }) => {
         UserImageURL: 'https://static.generated.photos/vue-static/face-generator/landing/wall/13.jpg',
       });
       
-      // After successful registration, automatically log in
+      // After successful registration, use the plaintext password for login
       await signIn({
         username: userData.UserUsername,
-        password: userData.password,
+        password: plainPassword,
       });
       
       return response;
