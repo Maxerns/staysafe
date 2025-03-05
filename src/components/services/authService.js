@@ -1,4 +1,5 @@
 import axios from 'axios';
+import CryptoJS from 'crypto-js';
 
 const API_URL = 'https://softwarehub.uk/unibase/staysafe/v1/api';
 
@@ -10,11 +11,22 @@ const apiClient = axios.create({
   },
 });
 
+// Simple password hashing function
+const hashPassword = (password) => {
+  return CryptoJS.SHA256(password).toString();
+};
+
 export const authService = {
   // Register a new user
   register: async (userData) => {
     try {
-      const response = await apiClient.post('/users', userData);
+      // Hash the password before sending to API
+      const hashedUserData = {
+        ...userData,
+        UserPassword: hashPassword(userData.UserPassword)
+      };
+      
+      const response = await apiClient.post('/users', hashedUserData);
       return response.data;
     } catch (error) {
       if (error.response) {
@@ -38,8 +50,10 @@ export const authService = {
         throw new Error('User not found');
       }
       
-      // Check password
-      if (user.UserPassword !== credentials.password) {
+      // Hash the input password and check against stored hash
+      const hashedPassword = hashPassword(credentials.password);
+      
+      if (user.UserPassword !== hashedPassword) {
         throw new Error('Invalid password');
       }
       
