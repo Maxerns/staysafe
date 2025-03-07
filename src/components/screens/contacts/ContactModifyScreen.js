@@ -1,4 +1,3 @@
-import { Text } from "react-native";
 import Screen from "../../layout/Screen";
 import ContactForm from "../../entity/contacts/ContactForm";
 import intialUsers from "../../../data/users.js";
@@ -7,15 +6,20 @@ const ContactModifyScreen = ({ navigation, route }) => {
   // Expect route.params to include the contact to modify and onModify callback
   const { contact, onModify } = route.params;
 
-  // Look up the current username by the contact’s reference id
+  // Look up the current username by the contact's reference id
   const foundUser = intialUsers.find(
     (user) => user.UserID === contact.ContactContactID
   );
   const initialContactUsername = foundUser ? foundUser.UserUsername : "";
 
   const handleSave = (modifiedContact) => {
-    onModify(modifiedContact);
-    navigation.goBack();
+    // Keep original ContactUserID in case it wasn't included in the form
+    const updatedContact = {
+      ...modifiedContact,
+      ContactUserID: contact.ContactUserID,
+    };
+    
+    onModify(updatedContact);
   };
 
   const handleCancel = navigation.goBack;

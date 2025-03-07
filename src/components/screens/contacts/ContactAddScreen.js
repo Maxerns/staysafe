@@ -1,33 +1,25 @@
-import Screen from "../../layout/Screen.js";
-import ContactForm from "../../entity/contacts/ContactForm.js";
+import Screen from "../../layout/Screen";
+import ContactForm from "../../entity/contacts/ContactForm";
+import { KeyboardAvoidingView } from "react-native";
 
 const ContactAddScreen = ({ navigation, route }) => {
+  // Initialisations ---------------------------------
   const { onAdd } = route.params;
-  
-  // Prepare a default contact
-  const initialContact = {
-    ContactID: Math.floor(100000 + Math.random() * 900000).toString(),
-    ContactUserID: "",
-    ContactContactID: "",
-    ContactLabel: "",
-    ContactDatecreated: new Date().toISOString(),
-  };
+  // State -------------------------------------------
 
-  const handleSave = (newContact) => {
-    onAdd(newContact);
-    navigation.goBack();
-  };
-
+  // Handlers ----------------------------------------
   const handleCancel = navigation.goBack;
+  
+  const handleSubmit = (contactData) => {
+    onAdd(contactData);
+  };
 
+  // View --------------------------------------------
   return (
     <Screen>
-      <ContactForm
-        initialContact={initialContact}
-        initialContactUsername={""}
-        onSave={handleSave}
-        onCancel={handleCancel}
-      />
+      <KeyboardAvoidingView behavior="position" keyboardVerticalOffset={100}>
+        <ContactForm onSave={handleSubmit} onCancel={handleCancel} />
+      </KeyboardAvoidingView>
     </Screen>
   );
 };
