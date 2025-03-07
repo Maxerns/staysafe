@@ -6,7 +6,7 @@ const ActivityItem = ({activity, onSelect}) => {
   // Handlers ----------------------------------------
   // View --------------------------------------------
   return (
-    <Pressable key={activity.ActivityID} onPress={() => onSelect(activity)}>
+    <Pressable onPress={() => onSelect(activity)}>
     <View style={styles.item}>
       <Text style={styles.text}>
         {activity.ActivityID} {activity.ActivityName}

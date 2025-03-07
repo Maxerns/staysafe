@@ -1,120 +1,175 @@
-import { useState } from "react";
-import {
-    KeyboardAvoidingView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View
-} from "react-native";
-import { ButtonTray, Button } from "../../UI/Button.js";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
 import Icons from "../../UI/Icons.js";
-import intialUsers from "../../../data/users.js";
+import Form from "../../UI/Form.js";
+import { contactService } from "../../services/contactService.js";
 
-const ContactForm = ({
-  initialContact,
-  initialContactUsername = "",
-  onSave,
-  onCancel,
-}) => {
-  const [contact, setContact] = useState(initialContact);
-  const [contactUsername, setContactUsername] = useState(initialContactUsername);
-  const [error, setError] = useState(null);
+const defaultContact = {
+  ContactID: null,
+  ContactContactID: null,
+  ContactLabel: "",
+  ContactDatecreated: new Date().toISOString(),
+};
 
-  const handleSave = () => {
-    // Ensure both username and label are provided
-    if (!contactUsername.trim() || !contact.ContactLabel.trim()) {
-      setError("All fields are required.");
+const ContactForm = ({ initialContact, initialContactUsername, onSave, onCancel }) => {
+  // State for form fields
+  const [contact, setContact] = useState(initialContact || defaultContact);
+  const [username, setUsername] = useState(initialContactUsername || "");
+  const [isValidating, setIsValidating] = useState(false);
+  const [usernameError, setUsernameError] = useState(null);
+  const [isUserFound, setIsUserFound] = useState(false);
+  
+  // Handlers
+  const handleSubmit = async () => {
+    if (!contact.ContactLabel.trim()) {
+      // Validate label is not empty
+      setUsernameError("Contact label is required");
       return;
     }
-
-    // Assume the logged in user id is "1"
-    const currentUserID = "1";
-
-    // Look up the contact by username (case-insensitive)
-    const foundUser = intialUsers.find(
-      (user) =>
-        user.UserUsername.toLowerCase() === contactUsername.trim().toLowerCase()
-    );
-
-    if (!foundUser) {
-      setError("User not found.");
+    
+    if (!isUserFound && !contact.ContactContactID) {
+      setUsernameError("Please enter a valid username");
       return;
     }
+    
+    // Submit form with ContactContactID properly set
+    onSave(contact);
+  };
 
-    const newContact = {
+  const handleUsernameChange = (value) => {
+    setUsername(value);
+    setUsernameError(null);
+    setIsUserFound(false);
+  };
+  
+  const validateUsername = async () => {
+    if (!username.trim()) {
+      setUsernameError("Username is required");
+      return;
+    }
+    
+    try {
+      setIsValidating(true);
+      const foundUser = await contactService.findUserByUsername(username);
+      
+      if (foundUser) {
+        setContact({
+          ...contact,
+          ContactContactID: foundUser.UserID
+        });
+        setIsUserFound(true);
+        setUsernameError(null);
+      } else {
+        setUsernameError(`User '${username}' not found`);
+        setIsUserFound(false);
+      }
+    } catch (error) {
+      setUsernameError("Error validating username");
+      console.error("Error validating username:", error);
+    } finally {
+      setIsValidating(false);
+    }
+  };
+  
+  const handleLabelChange = (value) => {
+    setContact({
       ...contact,
-      ContactUserID: currentUserID,
-      ContactContactID: foundUser.UserID,
-      ContactDatecreated: new Date().toISOString(),
-    };
-
-    onSave(newContact);
+      ContactLabel: value
+    });
   };
+  
+  // Check username when form loads if initialContactUsername is provided
+  useEffect(() => {
+    if (initialContactUsername) {
+      validateUsername();
+    }
+  }, [initialContactUsername]);
 
-  const handleChange = (field, value) => {
-    setContact({ ...contact, [field]: value });
-    if (error) setError(null);
-  };
-
+  const submitLabel = initialContact ? "Update Contact" : "Add Contact";
+  const submitIcon = initialContact ? <Icons.Edit /> : <Icons.Add />;
+  
   return (
-    <KeyboardAvoidingView behavior="padding">
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.item}>
-          <Text style={styles.itemLabel}>Contact Username</Text>
-          <TextInput
-            value={contactUsername}
-            onChangeText={(value) => {
-              setContactUsername(value);
-              if (error) setError(null);
-            }}
-            style={styles.itemInput}
-          />
+    <Form
+      onSubmit={handleSubmit}
+      onCancel={onCancel}
+      submitLabel={submitLabel}
+      submitIcon={submitIcon}
+    >
+      <Form.InputText
+        label="Username"
+        value={username}
+        onChange={handleUsernameChange}
+      />
+      
+      {usernameError && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{usernameError}</Text>
         </View>
-
-        <View style={styles.item}>
-          <Text style={styles.itemLabel}>Contact Label</Text>
-          <TextInput
-            value={contact.ContactLabel}
-            onChangeText={(value) => handleChange("ContactLabel", value)}
-            style={styles.itemInput}
-          />
-          {error && <Text style={styles.errorText}>{error}</Text>}
+      )}
+      
+      {isValidating && (
+        <View style={styles.validatingContainer}>
+          <ActivityIndicator size="small" color="#000" />
+          <Text style={styles.validatingText}>Checking username...</Text>
         </View>
-
-        <ButtonTray>
-          <Button label="Save" icon={<Icons.Add />} onClick={handleSave} />
-          <Button label="Cancel" onClick={onCancel} />
-        </ButtonTray>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      )}
+      
+      {isUserFound && (
+        <View style={styles.successContainer}>
+          <Text style={styles.successText}>User found!</Text>
+        </View>
+      )}
+      
+      <Form.InputText
+        label="Contact Label (nickname)"
+        value={contact.ContactLabel}
+        onChange={handleLabelChange}
+      />
+      
+      <View style={styles.actionContainer}>
+        <Text style={styles.actionText} onPress={validateUsername}>
+          Verify Username
+        </Text>
+      </View>
+    </Form>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-  },
-  item: {
-    marginVertical: 8,
-  },
-  itemLabel: {
-    color: "grey",
-    fontSize: 16,
-    marginBottom: 5,
-  },
-  itemInput: {
-    height: 50,
-    paddingLeft: 10,
-    fontSize: 16,
-    backgroundColor: "white",
-    borderRadius: 7,
-    borderWidth: 1,
-    borderColor: "lightgrey",
+  errorContainer: {
+    padding: 8,
+    marginVertical: 5,
   },
   errorText: {
     color: "red",
-    marginTop: 5,
+    fontSize: 14,
+  },
+  validatingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 8,
+    marginVertical: 5,
+  },
+  validatingText: {
+    marginLeft: 8,
+    fontSize: 14,
+  },
+  successContainer: {
+    padding: 8,
+    marginVertical: 5,
+  },
+  successText: {
+    color: "green",
+    fontSize: 14,
+  },
+  actionContainer: {
+    marginVertical: 10,
+    alignItems: "flex-end",
+  },
+  actionText: {
+    color: "blue",
+    fontSize: 14,
+    textDecorationLine: "underline",
   },
 });
 
