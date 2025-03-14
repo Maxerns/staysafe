@@ -5,17 +5,18 @@ import {
   Text,
   TextInput,
   StyleSheet,
+  Platform,
 } from "react-native";
+import React, { useState } from "react";
 import Checkbox from 'expo-checkbox';
 import { ButtonTray, Button } from "../UI/Button.js";
 import Icons from "../UI/Icons.js";
 import { SelectList } from "react-native-dropdown-select-list";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { TouchableOpacity } from "react-native";
 
 const Form = ({ children, onSubmit, onCancel, submitLabel, submitIcon }) => {
-  // Initialisations ---------------------------------
-  // State -------------------------------------------
-  // Handlers ----------------------------------------
-  // View --------------------------------------------
   return (
     <KeyboardAvoidingView style={styles.formContainer}>
       <ScrollView contentContainerStyle={styles.formItems}>
@@ -30,18 +31,10 @@ const Form = ({ children, onSubmit, onCancel, submitLabel, submitIcon }) => {
 };
 
 const InputText = ({ label, value, onChange }) => {
-  // Initialisations ---------------------------------
-  // State -------------------------------------------
-  // Handlers ----------------------------------------
-  // View --------------------------------------------
   return (
     <View style={styles.item}>
       <Text style={styles.itemLabel}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChange}
-        style={styles.itemInput}
-      />
+      <TextInput value={value} onChangeText={onChange} style={styles.itemInput} />
     </View>
   );
 };
@@ -72,8 +65,8 @@ const InputSelect = ({
           data={selectListData}
           placeholder={prompt}
           defaultOption={selectListData.find((item) => item.key === value)}
-          boxStyles={styles.selectListBoxStyle} // style for the select list box
-          dropdownStyles={styles.selectListDropdownStyle} // style for the dropdown items
+          boxStyles={styles.selectListBoxStyle}
+          dropdownStyles={styles.selectListDropdownStyle}
         />
       )}
     </View>
@@ -81,10 +74,6 @@ const InputSelect = ({
 };
 
 const InputPassword = ({ label, value, onChange }) => {
-  // Initialisations ---------------------------------
-  // State -------------------------------------------
-  // Handlers ----------------------------------------
-  // View --------------------------------------------
   return (
     <View style={styles.item}>
       <Text style={styles.itemLabel}>{label}</Text>
@@ -96,13 +85,9 @@ const InputPassword = ({ label, value, onChange }) => {
       />
     </View>
   );
-}
+};
 
 const InputCheckbox = ({ label, value, onChange }) => {
-  // Initialisations ---------------------------------
-  // State -------------------------------------------
-  // Handlers ----------------------------------------
-  // View --------------------------------------------
   return (
     <View style={styles.itemCheckbox}>
       <Text style={styles.itemLabel}>{label}</Text>
@@ -111,11 +96,79 @@ const InputCheckbox = ({ label, value, onChange }) => {
   );
 };
 
-//compose components
+const InputDate = ({ label, value, onChange }) => {
+  // For Android, use the imperative API chaining date then time pickers.
+  if (Platform.OS === "android") {
+    const openAndroidPicker = () => {
+      const currentDate = value ? new Date(value) : new Date();
+      // Open date picker first.
+      DateTimePickerAndroid.open({
+        value: currentDate,
+        mode: "date",
+        display: "default",
+        onChange: (dateEvent, selectedDate) => {
+          if (dateEvent.type !== "set" || !selectedDate) {
+            return; // Cancelled the date selection.
+          }
+          // Then open the time picker.
+          DateTimePickerAndroid.open({
+            value: currentDate,
+            mode: "time",
+            display: "default",
+            onChange: (timeEvent, selectedTime) => {
+              if (timeEvent.type !== "set" || !selectedTime) {
+                // If user cancels time, fallback to just date.
+                onChange(selectedDate.toISOString());
+              } else {
+                // Combine selected date and time.
+                selectedDate.setHours(selectedTime.getHours());
+                selectedDate.setMinutes(selectedTime.getMinutes());
+                selectedDate.setSeconds(selectedTime.getSeconds());
+                onChange(selectedDate.toISOString());
+              }
+            },
+          });
+        },
+      });
+    };
+
+    return (
+      <View style={styles.item}>
+        <Text style={styles.itemLabel}>{label}</Text>
+        <TouchableOpacity onPress={openAndroidPicker} style={styles.itemInput}>
+        <Text>{value ? new Date(value).toLocaleString() : "Select Date & Time"}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  } else {
+    // iOS and others use the component approach.
+    const [show, setShow] = useState(false);
+    const dateValue = value ? new Date(value) : new Date();
+    return (
+      <View style={styles.item}>
+      <Text style={styles.itemLabel}>{label}</Text>
+        <DateTimePicker
+        value={dateValue}
+        mode="datetime"
+        display="default"
+        onChange={(event, selectedDate) => {
+          setShow(false);
+          if (selectedDate) {
+          onChange(selectedDate.toISOString());
+          }
+        }}
+        />
+      </View>
+    );
+  }
+};
+
+// Compose components
 Form.InputText = InputText;
 Form.InputSelect = InputSelect;
 Form.InputPassword = InputPassword;
 Form.InputCheckbox = InputCheckbox;
+Form.InputDate = InputDate;
 
 const styles = StyleSheet.create({
   formItems: {
