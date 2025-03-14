@@ -134,6 +134,19 @@ export const ActivityProvider = ({ children }) => {
     }
   };
 
+  const loadLocation = async (locationId) => {
+    try {
+      setLoading(true);
+      const location = await activityService.getLocation(locationId);
+      return location;
+    } catch (error) {
+      setError(error.message || "Failed to load location");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <ActivityContext.Provider
       value={{
@@ -145,6 +158,7 @@ export const ActivityProvider = ({ children }) => {
         deleteActivity,
         refreshActivities,
         createLocation,
+        loadLocation,
       }}
     >
       {children}

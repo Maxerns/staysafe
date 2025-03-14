@@ -9,16 +9,13 @@ const ContactAddScreen = ({ navigation, route }) => {
 
   // Handlers ----------------------------------------
   const handleCancel = navigation.goBack;
-  
-  const handleSubmit = (contactData) => {
-    onAdd(contactData);
-  };
+
 
   // View --------------------------------------------
   return (
     <Screen>
       <KeyboardAvoidingView behavior="position" keyboardVerticalOffset={100}>
-        <ContactForm onSave={handleSubmit} onCancel={handleCancel} />
+        <ContactForm onSave={onAdd} onCancel={handleCancel} />
       </KeyboardAvoidingView>
     </Screen>
   );

@@ -91,6 +91,16 @@ export const activityService = {
       throw error;
     }
   },
+
+  getLocation: async (locationId) => {
+    try {
+      const response = await apiClient.get(`/locations/${locationId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching location ${locationId}:`, error);
+      throw error;
+    }
+  },
 };
 
 export default activityService;

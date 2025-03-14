@@ -21,21 +21,16 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CARD_WIDTH = SCREEN_WIDTH * 0.8;
 const CARD_SPACING = 10;
 
-const MapLocationSelectionScreen = ({ navigation, route }) => {
-  // State management
-  const [pointA, setPointA] = useState(null);
-  const [pointB, setPointB] = useState(null);
-  const [activePoint, setActivePoint] = useState(null);
-  const [mapRegion, setMapRegion] = useState({
-    latitude: 37.78825,
-    longitude: -122.4324,
-    latitudeDelta: 0.05,
-    longitudeDelta: 0.05,
-  });
 
-  // References
-  const mapRef = useRef(null);
-  const scrollViewRef = useRef(null);
+
+const MapLocationSelectionScreen = ({ navigation, route }) => {
+  // Initialisations ---------------------------------
+  useEffect(() => {
+    if (route.params?.locations) {
+      setLocations(route.params.locations);
+      locationRef.current = route.params.locations;
+    }
+  }, [route.params]);
 
   // Get user's current location on mount
   useEffect(() => {
@@ -67,12 +62,21 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
     })();
   }, []);
 
-  // Initialize with route params if provided
-  useEffect(() => {
-    if (route.params?.pointA) setPointA(route.params.pointA);
-    if (route.params?.pointB) setPointB(route.params.pointB);
-  }, [route.params]);
+  const mapRef = useRef(null);
+  const scrollViewRef = useRef(null);
+  const locationRef = useRef([null, null]);
 
+  // State -------------------------------------------
+  const [locations, setLocations] = useState([null, null]); // [from, to]
+  const [activePoint, setActivePoint] = useState(null);
+  const [mapRegion, setMapRegion] = useState({
+    latitude: 37.78825,
+    longitude: -122.4324,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
+  });
+
+  // Handlers ----------------------------------------
   // Reverse geocode to get address from coordinates
   const reverseGeocode = async (latitude, longitude) => {
     try {
@@ -93,51 +97,53 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
     return { address: "", postcode: "" };
   };
 
-  // Handle map tap to place markers
   const handleMapPress = useCallback(
     async (event) => {
       const { latitude, longitude } = event.nativeEvent.coordinate;
       const geoData = await reverseGeocode(latitude, longitude);
+      const newLocation = {
+        LocationLatitude: latitude,
+        LocationLongitude: longitude,
+        LocationAddress: geoData.address,
+        LocationPostcode: geoData.postcode,
+        LocationName: "",
+        LocationDescription: "",
+      };
 
-      if (activePoint === "A") {
-        setPointA({
-          latitude,
-          longitude,
-          ...geoData,
-          title: pointA?.title || "",
-          description: pointA?.description || "",
-        });
-        setActivePoint(null);
-      } else if (activePoint === "B") {
-        setPointB({
-          latitude,
-          longitude,
-          ...geoData,
-          title: pointB?.title || "",
-          description: pointB?.description || "",
-        });
+      if (activePoint === 0 || activePoint === 1) {
+        const newLocations = [...locationRef.current];
+        newLocations[activePoint] = {
+          ...newLocation,
+          LocationName: locationRef.current[activePoint]?.LocationName || "",
+          LocationDescription:
+            locationRef.current[activePoint]?.LocationDescription || "",
+        };
+        locationRef.current = newLocations;
+        setLocations(newLocations);
         setActivePoint(null);
       } else {
-        if (!pointA) {
-          setPointA({
-            latitude,
-            longitude,
-            ...geoData,
-            title: "",
-            description: "",
-          });
+        if (!locationRef.current[0]) {
+          const newLocations = [...locationRef.current];
+          newLocations[0] = {
+            ...newLocation,
+            LocationName: "",
+            LocationDescription: "",
+          };
+          locationRef.current = newLocations;
+          setLocations(newLocations);
           // Scroll to Point A card after a short delay
           setTimeout(() => {
             scrollViewRef.current?.scrollTo({ x: 0, animated: true });
           }, 300);
-        } else if (!pointB) {
-          setPointB({
-            latitude,
-            longitude,
-            ...geoData,
-            title: "",
-            description: "",
-          });
+        } else if (!locationRef.current[1]) {
+          const newLocations = [...locationRef.current];
+          newLocations[1] = {
+            ...newLocation,
+            LocationName: "",
+            LocationDescription: "",
+          };
+          locationRef.current = newLocations;
+          setLocations(newLocations);
           // Scroll to Point B card after a short delay
           setTimeout(() => {
             scrollViewRef.current?.scrollTo({
@@ -154,18 +160,18 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
         }
       }
     },
-    [activePoint, pointA, pointB]
+    [activePoint]
   );
 
-  // Remove a point
-  const removePoint = (pointType) => {
-    if (pointType === "A") setPointA(null);
-    else if (pointType === "B") setPointB(null);
+  const removePoint = (pointIndex) => {
+    const newLocations = [...locationRef.current];
+    newLocations[pointIndex] = null;
+    locationRef.current = newLocations;
+    setLocations(newLocations);
   };
 
-  // Save both points
   const handleSave = () => {
-    if (!pointA || !pointB) {
+    if (!locationRef.current[0] || !locationRef.current[1]) {
       Alert.alert(
         "Missing Locations",
         "Please select both Point A and Point B"
@@ -174,10 +180,10 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
     }
 
     if (
-      !pointA.title ||
-      !pointA.description ||
-      !pointB.title ||
-      !pointB.description
+      !locationRef.current[0].LocationName ||
+      !locationRef.current[0].LocationDescription ||
+      !locationRef.current[1].LocationName ||
+      !locationRef.current[1].LocationDescription
     ) {
       Alert.alert(
         "Missing Information",
@@ -187,20 +193,19 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
     }
 
     if (route.params?.onLocationsSelected) {
-      route.params.onLocationsSelected(pointA, pointB);
+      route.params.onLocationsSelected(locationRef.current);
     }
 
     navigation.goBack();
   };
 
-  // Focus map on a specific point
   const focusMapOnPoint = (point) => {
     if (!point || !mapRef.current) return;
 
     mapRef.current.animateToRegion(
       {
-        latitude: point.latitude,
-        longitude: point.longitude,
+        latitude: point.LocationLatitude,
+        longitude: point.LocationLongitude,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       },
@@ -208,8 +213,9 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
     );
   };
 
-  // Render a location card
-  const renderLocationCard = (point, pointType) => {
+  // View --------------------------------------------
+
+  const LocationCard = (point, pointIndex) => {
     if (!point) {
       // Render empty card with instructions
       return (
@@ -218,13 +224,15 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
             <View
               style={[
                 styles.pointBadge,
-                { backgroundColor: pointType === "A" ? "#2196F3" : "#4CAF50" },
+                { backgroundColor: pointIndex === 0 ? "#2196F3" : "#4CAF50" },
               ]}
             >
-              <Text style={styles.pointBadgeText}>{pointType}</Text>
+              <Text style={styles.pointBadgeText}>
+                {pointIndex === 0 ? "From" : "To"}
+              </Text>
             </View>
             <Text style={styles.cardTitle}>
-              Tap on map to set Point {pointType}
+              Tap on map to set Point {pointIndex === 0 ? "From" : "To"}
             </Text>
           </View>
           <View style={styles.emptyCardContent}>
@@ -237,7 +245,7 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
       );
     }
 
-    const isPointA = pointType === "A";
+    const isPointA = pointIndex === 0;
     const cardColor = isPointA ? "#E3F2FD" : "#E8F5E9";
 
     return (
@@ -249,14 +257,16 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
               { backgroundColor: isPointA ? "#2196F3" : "#4CAF50" },
             ]}
           >
-            <Text style={styles.pointBadgeText}>{pointType}</Text>
+            <Text style={styles.pointBadgeText}>
+              {pointIndex === 0 ? "From" : "To"}
+            </Text>
           </View>
           <Text style={styles.cardTitle} numberOfLines={1}>
-            {point.title || `Point ${pointType}`}
+            {point.LocationName || `Point ${pointIndex === 0 ? "From" : "To"}`}
           </Text>
           <TouchableOpacity
             style={styles.iconButton}
-            onPress={() => removePoint(pointType)}
+            onPress={() => removePoint(pointIndex)}
           >
             <Ionicons name="trash-outline" size={20} color="#F44336" />
           </TouchableOpacity>
@@ -265,14 +275,14 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
         <View style={styles.addressContainer}>
           <Ionicons name="location-outline" size={16} color="#757575" />
           <Text style={styles.addressText} numberOfLines={2}>
-            {point.address || "Address not available"}
+            {point.LocationAddress || "Address not available"}
           </Text>
         </View>
 
-        {point.postcode ? (
+        {point.LocationPostcode ? (
           <View style={styles.postcodeContainer}>
             <Ionicons name="mail-outline" size={16} color="#757575" />
-            <Text style={styles.postcodeText}>{point.postcode}</Text>
+            <Text style={styles.postcodeText}>{point.LocationPostcode}</Text>
           </View>
         ) : null}
 
@@ -281,10 +291,15 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
             style={styles.input}
             placeholder="Title"
             placeholderTextColor="#9E9E9E"
-            value={point.title}
+            value={point.LocationName}
             onChangeText={(text) => {
-              if (isPointA) setPointA((prev) => ({ ...prev, title: text }));
-              else setPointB((prev) => ({ ...prev, title: text }));
+              const newLocations = [...locationRef.current];
+              newLocations[pointIndex] = {
+                ...newLocations[pointIndex],
+                LocationName: text,
+              };
+              locationRef.current = newLocations;
+              setLocations(newLocations);
             }}
           />
 
@@ -294,11 +309,15 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
             placeholderTextColor="#9E9E9E"
             multiline
             numberOfLines={2}
-            value={point.description}
+            value={point.LocationDescription}
             onChangeText={(text) => {
-              if (isPointA)
-                setPointA((prev) => ({ ...prev, description: text }));
-              else setPointB((prev) => ({ ...prev, description: text }));
+              const newLocations = [...locationRef.current];
+              newLocations[pointIndex] = {
+                ...newLocations[pointIndex],
+                LocationDescription: text,
+              };
+              locationRef.current = newLocations;
+              setLocations(newLocations);
             }}
           />
         </View>
@@ -315,7 +334,7 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
           <TouchableOpacity
             style={[styles.actionButton, styles.editButton]}
             onPress={() => {
-              setActivePoint(pointType);
+              setActivePoint(pointIndex);
             }}
           >
             <Ionicons name="create-outline" size={16} color="#FFFFFF" />
@@ -326,57 +345,54 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
     );
   };
 
-  // Calculate if save button should be enabled
   const canSave =
-    pointA &&
-    pointB &&
-    pointA.title &&
-    pointA.description &&
-    pointB.title &&
-    pointB.description;
+    locationRef.current[0] &&
+    locationRef.current[1] &&
+    locationRef.current[0].LocationName &&
+    locationRef.current[0].LocationDescription &&
+    locationRef.current[1].LocationName &&
+    locationRef.current[1].LocationDescription;
 
   return (
-    <Screen>
+    <View style={styles.container}>
       <MapView
         ref={mapRef}
         style={styles.map}
         region={mapRegion}
         onPress={handleMapPress}
       >
-        {pointA && (
+        {locations[0] && (
           <Marker
             coordinate={{
-              latitude: pointA.latitude,
-              longitude: pointA.longitude,
+              latitude: locations[0].LocationLatitude,
+              longitude: locations[0].LocationLongitude,
             }}
             pinColor="blue"
-            title={pointA.title || "Point A"}
-            description={pointA.address || ""}
+            title={locations[0].LocationName || "Point From"}
+            description={locations[0].LocationAddress || ""}
           />
         )}
-        {pointB && (
+        {locations[1] && (
           <Marker
             coordinate={{
-              latitude: pointB.latitude,
-              longitude: pointB.longitude,
+              latitude: locations[1].LocationLatitude,
+              longitude: locations[1].LocationLongitude,
             }}
             pinColor="green"
-            title={pointB.title || "Point B"}
-            description={pointB.address || ""}
+            title={locations[1].LocationName || "Point To"}
+            description={locations[1].LocationAddress || ""}
           />
         )}
       </MapView>
 
-      {/* Active point indicator */}
       {activePoint && (
         <View style={styles.activePointIndicator}>
           <Text style={styles.activePointText}>
-            Tap on map to set Point {activePoint}
+            Tap on map to set Point {activePoint === 0 ? "From" : "To"}
           </Text>
         </View>
       )}
 
-      {/* Horizontal scrollable cards */}
       <View style={styles.cardsContainer}>
         <ScrollView
           ref={scrollViewRef}
@@ -387,11 +403,10 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
           decelerationRate="fast"
           pagingEnabled
         >
-          {renderLocationCard(pointA, "A")}
-          {renderLocationCard(pointB, "B")}
+          {LocationCard(locations[0], 0)}
+          {LocationCard(locations[1], 1)}
         </ScrollView>
       </View>
-      {/* Save button */}
       {canSave && (
         <Button
           icon={<Ionicons name="save-outline" size={24} color="#FFFFFF" />}
@@ -401,7 +416,7 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
           styleLabel={styles.saveButtonText}
         />
       )}
-    </Screen>
+    </View>
   );
 };
 
