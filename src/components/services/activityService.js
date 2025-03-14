@@ -28,7 +28,7 @@ export const activityService = {
       const response = await apiClient.get(`/activities/users/${userId}`);
       return response.data;
     } catch (error) {
-        return response.data;
+      return response.data;
     }
   },
 
@@ -45,7 +45,7 @@ export const activityService = {
   // Create new activity
   createActivity: async (activityData) => {
     try {
-      const response = await apiClient.post("/activities/", activityData);
+      const response = await apiClient.post("/activities/", activityData); // Corrected endpoint
       return response.data;
     } catch (error) {
       if (error.response && error.response.data) {
@@ -78,6 +78,16 @@ export const activityService = {
       return response.data;
     } catch (error) {
       console.error(`Error deleting activity ${activityId}:`, error);
+      throw error;
+    }
+  },
+
+  createLocation: async (locationData) => {
+    try {
+      const response = await apiClient.post("/locations/", locationData); // Corrected endpoint
+      return response.data;
+    } catch (error) {
+      console.error("Error creating location:", error);
       throw error;
     }
   },

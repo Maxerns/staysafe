@@ -121,6 +121,19 @@ export const ActivityProvider = ({ children }) => {
     }
   };
 
+  const createLocation = async (locationData) => {
+    try {
+      setLoading(true);
+      const newLocation = await activityService.createLocation(locationData);
+      return newLocation;
+    } catch (error) {
+      setError(error.message || "Failed to create location");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <ActivityContext.Provider
       value={{
@@ -131,6 +144,7 @@ export const ActivityProvider = ({ children }) => {
         updateActivity,
         deleteActivity,
         refreshActivities,
+        createLocation,
       }}
     >
       {children}
