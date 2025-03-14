@@ -9,6 +9,7 @@ const Edit = () => <MaterialIcons name='edit' size={16} />;
 const Favourite = () => <MaterialIcons name='favorite' size={20} color='crimson' />;
 const NotFavourite = () => <MaterialIcons name='favorite-border' size={20} color='grey' />;
 const Submit = () => <MaterialIcons name='check' size={16} />;
+const Location = () => <MaterialIcons name='my-location' size={16} />;
 
 // Compose
 Icons.Add = Add;
@@ -18,5 +19,6 @@ Icons.Edit = Edit;
 Icons.Favourite = Favourite;
 Icons.NotFavourite = NotFavourite;
 Icons.Submit = Submit;
+Icons.Location = Location;
 
 export default Icons;
