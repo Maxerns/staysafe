@@ -1,8 +1,13 @@
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { Button, ButtonTray } from "../../UI/Button";
 import Icons from "../../UI/Icons.js";
+import { useContext } from "react";
+import { AuthContext } from "../../context/authContext";
 
 const ActivityView = ({ activity, onDelete, onModify }) => {
+    const { user } = useContext(AuthContext); // Get the current logged-in user
+    const isOwner = activity.ActivityUserID === user.info.id; // Check ownership
+
     const handleDelete = () => onDelete(activity.ActivityID);
 
     const requestDelete = () =>
@@ -28,16 +33,18 @@ const ActivityView = ({ activity, onDelete, onModify }) => {
                     Created: {new Date(activity.ActivityDateCreated).toLocaleString()}
                 </Text>
             </View>
-            <ButtonTray>
-                <Button icon={<Icons.Edit />} label="Modify" onClick={onModify} />
-                <Button
-                    icon={<Icons.Delete />}
-                    label="Delete"
-                    styleButton={{ backgroundColor: "mistyrose" }}
-                    styleLabel={{ color: "red" }}
-                    onClick={requestDelete}
-                />
-            </ButtonTray>
+            {isOwner && ( // Only show buttons if the user is the owner
+                <ButtonTray>
+                    <Button icon={<Icons.Edit />} label="Modify" onClick={onModify} />
+                    <Button
+                        icon={<Icons.Delete />}
+                        label="Delete"
+                        styleButton={{ backgroundColor: "mistyrose" }}
+                        styleLabel={{ color: "red" }}
+                        onClick={requestDelete}
+                    />
+                </ButtonTray>
+            )}
         </View>
     );
 };

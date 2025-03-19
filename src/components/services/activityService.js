@@ -60,11 +60,8 @@ export const activityService = {
   // Update activity
   updateActivity: async (activityId, activityData) => {
     try {
-      const response = await apiClient.put(
-        `/activities/${activityId}`,
-        activityData
-      );
-      return response.data;
+      const response = await apiClient.put(`/activities/${activityId}`, activityData);
+      return response.data; // Ensure the response data is returned correctly
     } catch (error) {
       console.error(`Error updating activity ${activityId}:`, error);
       throw error;

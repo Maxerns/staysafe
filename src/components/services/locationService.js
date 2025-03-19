@@ -49,6 +49,48 @@ export const locationService = {
       throw error;
     }
   },
+
+  // Add position for an activity
+  addPosition: async (positionData) => {
+    try {
+      const response = await apiClient.post("/positions", positionData);
+      return response.data;
+    } catch (error) {
+      console.error("Error adding position:", error);
+      throw error;
+    }
+  },
+
+  // Fetch user's live location
+  getUserLocation: async (userId) => {
+    try {
+      console.log(`Fetching location for user ${userId} from API`);
+      const response = await apiClient.get(`/users/${userId}`);
+      
+      // Debug the response
+      console.log(`User location API response:`, response.data);
+      
+      // Check if the user has valid location data
+      const latitude = parseFloat(response.data.UserLatitude);
+      const longitude = parseFloat(response.data.UserLongitude);
+      const timestamp = response.data.UserTimestamp ? parseInt(response.data.UserTimestamp) : Date.now();
+      
+      // Validate coordinates
+      if (isNaN(latitude) || isNaN(longitude) || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
+        console.log(`Invalid coordinates for user ${userId}: lat=${latitude}, lng=${longitude}`);
+        throw new Error("User has no valid location data");
+      }
+      
+      return {
+        latitude,
+        longitude,
+        timestamp,
+      };
+    } catch (error) {
+      console.error(`Error fetching user ${userId} location:`, error);
+      throw error;
+    }
+  },
 };
 
 export default locationService;

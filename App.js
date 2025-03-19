@@ -11,13 +11,13 @@ const App = () => {
   // View --------------------------------------------
   return (
     <AuthProvider>
-      <ActivityProvider>
-        <ContactProvider>
+      <ContactProvider>
+        <ActivityProvider>
           <NavigationContainer>
             <StackNavigator />
           </NavigationContainer>
-        </ContactProvider>
-      </ActivityProvider>
+        </ActivityProvider>
+      </ContactProvider>
     </AuthProvider>
   );
 }

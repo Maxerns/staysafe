@@ -1,16 +1,16 @@
 import { StyleSheet, ScrollView} from "react-native";
 import ActivityItem from "./ActivityItem";
 
-const ActivityList = ({activities, onSelect}) => {
-  // Initialisations ---------------------------------
-  // State -------------------------------------------
-  // Handlers ----------------------------------------
-  // View --------------------------------------------
+const ActivityList = ({ activities, onSelect }) => {
   return (
     <ScrollView style={styles.container}>
-      {activities.map((activity) => {
-        return <ActivityItem key={activity.ActivityID} activity={activity} onSelect={onSelect} />;
-      })}
+      {activities.map((activity, index) => (
+        <ActivityItem
+          key={activity.ActivityID || `activity-${index}`} // Fallback to index if ActivityID is missing
+          activity={activity}
+          onSelect={onSelect}
+        />
+      ))}
     </ScrollView>
   );
 };
