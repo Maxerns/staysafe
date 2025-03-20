@@ -1,13 +1,13 @@
-import axios from 'axios';
-import CryptoJS from 'crypto-js';
+import axios from "axios";
+import CryptoJS from "crypto-js";
 
-const API_URL = 'https://softwarehub.uk/unibase/staysafe/v1/api';
+const API_URL = "https://softwarehub.uk/unibase/staysafe/v1/api";
 
 // Create axios instance
 const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -23,16 +23,16 @@ export const authService = {
       // Hash the password before sending to API
       const hashedUserData = {
         ...userData,
-        UserPassword: hashPassword(userData.UserPassword)
+        UserPassword: hashPassword(userData.UserPassword),
       };
-      
-      const response = await apiClient.post('/users', hashedUserData);
+
+      const response = await apiClient.post("/users", hashedUserData);
       return response.data;
     } catch (error) {
       if (error.response) {
-        throw new Error(error.response.data.message || 'Registration failed');
+        throw new Error(error.response.data.message || "Registration failed");
       }
-      throw new Error('Network error, please try again');
+      throw new Error("Network error, please try again");
     }
   },
 
@@ -40,23 +40,23 @@ export const authService = {
   login: async (credentials) => {
     try {
       // Fetch all users
-      const response = await apiClient.get('/users');
+      const response = await apiClient.get("/users");
       const users = response.data;
-      
+
       // Find the user with the matching username
-      const user = users.find(u => u.UserUsername === credentials.username);
-      
+      const user = users.find((u) => u.UserUsername === credentials.username);
+
       if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
       }
-      
+
       // Hash the input password and check against stored hash
       const hashedPassword = hashPassword(credentials.password);
-      
+
       if (user.UserPassword !== hashedPassword) {
-        throw new Error('Invalid password');
+        throw new Error("Invalid password");
       }
-      
+
       // Return user data without token
       return {
         user: {
@@ -68,7 +68,7 @@ export const authService = {
       };
     } catch (error) {
       if (error.response) {
-        throw new Error(error.response.data.message || 'Login failed');
+        throw new Error(error.response.data.message || "Login failed");
       }
       throw error;
     }

@@ -10,7 +10,6 @@ const ContactAddScreen = ({ navigation, route }) => {
   // Handlers ----------------------------------------
   const handleCancel = navigation.goBack;
 
-
   // View --------------------------------------------
   return (
     <Screen>

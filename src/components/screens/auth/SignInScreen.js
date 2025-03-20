@@ -7,20 +7,17 @@ import { AuthContext } from "../../context/authContext";
 
 const SignInScreen = ({ navigation }) => {
   // Initialisations ---------------------------------
+  const { signIn } = useContext(AuthContext);
   // State -------------------------------------------
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useContext(AuthContext);
 
   // Handlers ----------------------------------------
   const handleSignIn = async () => {
-
-
     setIsLoading(true);
     setError("");
-
     try {
       await signIn({ username, password });
       // Navigation will be handled by the auth context

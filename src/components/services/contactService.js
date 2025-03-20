@@ -1,12 +1,12 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_URL = 'https://softwarehub.uk/unibase/staysafe/v1/api';
+const API_URL = "https://softwarehub.uk/unibase/staysafe/v1/api";
 
 // Create axios instance
 const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -15,25 +15,30 @@ export const contactService = {
   getUserContacts: async (userId) => {
     try {
       // Try to fetch all contacts
-      const response = await apiClient.get('/contacts');
-      
+      const response = await apiClient.get("/contacts");
+
       // Handle response depending on what's returned
       if (Array.isArray(response.data)) {
         // Filter contacts where ContactUserID matches the current user's ID
-        return response.data.filter(contact => 
-          contact.ContactUserID === userId || 
-          contact.ContactUserID === String(userId)
+        return response.data.filter(
+          (contact) =>
+            contact.ContactUserID === userId ||
+            contact.ContactUserID === String(userId)
         );
-      } else if (response.data && response.data.message === "No record(s) found") {
+      } else if (
+        response.data &&
+        response.data.message === "No record(s) found"
+      ) {
         return [];
       } else if (Array.isArray(response.data.records)) {
         // Some APIs nest results in a 'records' property
-        return response.data.records.filter(contact => 
-          contact.ContactUserID === userId || 
-          contact.ContactUserID === String(userId)
+        return response.data.records.filter(
+          (contact) =>
+            contact.ContactUserID === userId ||
+            contact.ContactUserID === String(userId)
         );
       }
-      
+
       return [];
     } catch (error) {
       console.error(`Error fetching contacts for user ${userId}:`, error);
@@ -44,10 +49,10 @@ export const contactService = {
   // Create new contact
   createContact: async (contactData) => {
     try {
-      const response = await apiClient.post('/contacts', contactData);
+      const response = await apiClient.post("/contacts", contactData);
       return response.data;
     } catch (error) {
-      console.error('Error creating contact:', error);
+      console.error("Error creating contact:", error);
       throw error;
     }
   },
@@ -55,7 +60,10 @@ export const contactService = {
   // Update contact
   updateContact: async (contactId, contactData) => {
     try {
-      const response = await apiClient.put(`/contacts/${contactId}`, contactData);
+      const response = await apiClient.put(
+        `/contacts/${contactId}`,
+        contactData
+      );
       return response.data;
     } catch (error) {
       console.error(`Error updating contact ${contactId}:`, error);
@@ -73,36 +81,36 @@ export const contactService = {
       throw error;
     }
   },
-  
+
   // Find user by username
   findUserByUsername: async (username) => {
     try {
       // Get all users
-      const response = await apiClient.get('/users');
+      const response = await apiClient.get("/users");
       const users = response.data;
-      
+
       // Find user with matching username (case-insensitive)
       const user = users.find(
-        u => u.UserUsername.toLowerCase() === username.toLowerCase()
+        (u) => u.UserUsername.toLowerCase() === username.toLowerCase()
       );
-      
+
       return user || null;
     } catch (error) {
       console.error(`Error finding user by username:`, error);
       return null;
     }
   },
-  
+
   // Get all users for contact selection
   getAllUsers: async () => {
     try {
-      const response = await apiClient.get('/users');
+      const response = await apiClient.get("/users");
       return response.data;
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
       return [];
     }
-  }
+  },
 };
 
 export default contactService;

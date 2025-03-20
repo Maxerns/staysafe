@@ -12,7 +12,14 @@ const defaultActivity = {
   ActivityArrive: "",
 };
 
-const ActivityForm = ({ originalActivity, onSubmit, onCancel, navigation, initialLocations }) => {  // Initialisations ---------------------------------
+const ActivityForm = ({
+  originalActivity,
+  onSubmit,
+  onCancel,
+  navigation,
+  initialLocations,
+}) => {
+  // Initialisations ---------------------------------
   // State -------------------------------------------
   const [activity, setActivity] = useState(originalActivity || defaultActivity);
   const [locations, setLocations] = useState(initialLocations || [null, null]);
@@ -73,11 +80,13 @@ const ActivityForm = ({ originalActivity, onSubmit, onCancel, navigation, initia
   };
 
   const handleSelectLocations = () => {
-    navigation.navigate("MapLocationSelectionScreen", {
+    navigation.navigate("ActivityMapScreen", {
       locations: locations,
       onLocationsSelected: (newLocations) => setLocations(newLocations),
     });
   };
+
+  // View --------------------------------------------
 
   const submitLabel = originalActivity ? "Modify" : "Add";
   const submitIcon = originalActivity ? <Icons.Edit /> : <Icons.Add />;

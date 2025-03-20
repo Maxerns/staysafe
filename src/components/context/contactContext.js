@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { contactService } from "../services/contactService";
 import { AuthContext } from "./authContext";
+import { locationService } from "../services/locationService";
 
 export const ContactContext = createContext();
 
@@ -69,7 +70,6 @@ export const ContactProvider = ({ children }) => {
   const findUserByUsername = async (username) => {
     return await contactService.findUserByUsername(username);
   };
-
 
   const addContact = async (contactData) => {
     try {
@@ -179,6 +179,46 @@ export const ContactProvider = ({ children }) => {
     }
   };
 
+  const getContactLiveLocation = async (contactId) => {
+    try {
+      console.log(
+        `Attempting to get live location for contact/user ID: ${contactId}`
+      );
+
+      // First try to get the user's location from the API
+      const response = await locationService.getUserLocation(contactId);
+      console.log(`Received location data:`, response);
+
+      if (response && response.latitude && response.longitude) {
+        return response;
+      }
+
+      // If API doesn't have location data, try to get positions from the activity
+      console.log(
+        `No live location found in user data, trying to fetch latest position`
+      );
+      throw new Error("User location not available");
+    } catch (error) {
+      console.error(
+        `Error in getContactLiveLocation for ID ${contactId}:`,
+        error
+      );
+
+      // Fallback to simulated location if in development
+      if (__DEV__) {
+        console.log("Using fallback development location data");
+        // Generate a location near London for testing
+        return {
+          latitude: 51.5074 + Math.random() * 0.01,
+          longitude: -0.1278 + Math.random() * 0.01,
+          timestamp: Date.now(),
+        };
+      }
+
+      throw error;
+    }
+  };
+
   return (
     <ContactContext.Provider
       value={{
@@ -191,6 +231,7 @@ export const ContactProvider = ({ children }) => {
         deleteContact,
         findUserByUsername,
         refreshContacts,
+        getContactLiveLocation,
       }}
     >
       {children}

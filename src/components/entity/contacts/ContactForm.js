@@ -11,29 +11,59 @@ const defaultContact = {
   ContactDatecreated: new Date().toISOString(),
 };
 
-const ContactForm = ({ initialContact, initialContactUsername, onSave, onCancel }) => {
-  // State for form fields
+const ContactForm = ({
+  initialContact,
+  initialContactUsername,
+  onSave,
+  onCancel,
+}) => {
+  // Initialisations ---------------------------------
+  // State -------------------------------------------
   const [contact, setContact] = useState(initialContact || defaultContact);
   const [username, setUsername] = useState(initialContactUsername || "");
   const [isValidating, setIsValidating] = useState(false);
   const [usernameError, setUsernameError] = useState(null);
   const [isUserFound, setIsUserFound] = useState(false);
-  
-  // Handlers
+
+  // Handlers ----------------------------------------
   const handleSubmit = async () => {
+    // Validate form fields
     if (!contact.ContactLabel.trim()) {
-      // Validate label is not empty
       setUsernameError("Contact label is required");
       return;
     }
-    
-    if (!isUserFound && !contact.ContactContactID) {
-      setUsernameError("Please enter a valid username");
+
+    if (!username.trim()) {
+      setUsernameError("Username is required");
       return;
     }
-    
-    // Submit form with ContactContactID properly set
-    onSave(contact);
+
+    try {
+      setIsValidating(true);
+      setUsernameError(null);
+
+      // Automatically validate username
+      const foundUser = await contactService.findUserByUsername(username);
+
+      if (foundUser) {
+        // Update contact with found user ID
+        const updatedContact = {
+          ...contact,
+          ContactContactID: foundUser.UserID,
+        };
+
+        // Submit form with updated contact data
+        await onSave(updatedContact);
+        onCancel();
+      } else {
+        setUsernameError(`User '${username}' not found`);
+      }
+    } catch (error) {
+      console.error("Error validating username:", error);
+      setUsernameError("Error validating username");
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   const handleUsernameChange = (value) => {
@@ -41,21 +71,36 @@ const ContactForm = ({ initialContact, initialContactUsername, onSave, onCancel 
     setUsernameError(null);
     setIsUserFound(false);
   };
-  
+
+  const handleLabelChange = (value) => {
+    setContact({
+      ...contact,
+      ContactLabel: value,
+    });
+  };
+
+  // Check username when form loads if initialContactUsername is provided
+  useEffect(() => {
+    if (initialContactUsername) {
+      validateUsername();
+    }
+  }, [initialContactUsername]);
+
+  // Keep for internal use only - won't be exposed in UI
   const validateUsername = async () => {
     if (!username.trim()) {
       setUsernameError("Username is required");
       return;
     }
-    
+
     try {
       setIsValidating(true);
       const foundUser = await contactService.findUserByUsername(username);
-      
+
       if (foundUser) {
         setContact({
           ...contact,
-          ContactContactID: foundUser.UserID
+          ContactContactID: foundUser.UserID,
         });
         setIsUserFound(true);
         setUsernameError(null);
@@ -70,24 +115,11 @@ const ContactForm = ({ initialContact, initialContactUsername, onSave, onCancel 
       setIsValidating(false);
     }
   };
-  
-  const handleLabelChange = (value) => {
-    setContact({
-      ...contact,
-      ContactLabel: value
-    });
-  };
-  
-  // Check username when form loads if initialContactUsername is provided
-  useEffect(() => {
-    if (initialContactUsername) {
-      validateUsername();
-    }
-  }, [initialContactUsername]);
 
+  // View --------------------------------------------
   const submitLabel = initialContact ? "Update Contact" : "Add Contact";
   const submitIcon = initialContact ? <Icons.Edit /> : <Icons.Add />;
-  
+
   return (
     <Form
       onSubmit={handleSubmit}
@@ -100,37 +132,31 @@ const ContactForm = ({ initialContact, initialContactUsername, onSave, onCancel 
         value={username}
         onChange={handleUsernameChange}
       />
-      
+
       {usernameError && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{usernameError}</Text>
         </View>
       )}
-      
+
       {isValidating && (
         <View style={styles.validatingContainer}>
           <ActivityIndicator size="small" color="#000" />
           <Text style={styles.validatingText}>Checking username...</Text>
         </View>
       )}
-      
+
       {isUserFound && (
         <View style={styles.successContainer}>
           <Text style={styles.successText}>User found!</Text>
         </View>
       )}
-      
+
       <Form.InputText
         label="Contact Label (nickname)"
         value={contact.ContactLabel}
         onChange={handleLabelChange}
       />
-      
-      <View style={styles.actionContainer}>
-        <Text style={styles.actionText} onPress={validateUsername}>
-          Verify Username
-        </Text>
-      </View>
     </Form>
   );
 };
@@ -161,15 +187,6 @@ const styles = StyleSheet.create({
   successText: {
     color: "green",
     fontSize: 14,
-  },
-  actionContainer: {
-    marginVertical: 10,
-    alignItems: "flex-end",
-  },
-  actionText: {
-    color: "blue",
-    fontSize: 14,
-    textDecorationLine: "underline",
   },
 });
 

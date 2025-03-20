@@ -1,20 +1,20 @@
 import { StyleSheet, Text, View, Pressable } from "react-native";
 
-const ActivityItem = ({activity, onSelect}) => {
+const ActivityItem = ({ activity, onSelect }) => {
   // Initialisations ---------------------------------
   // State -------------------------------------------
   // Handlers ----------------------------------------
   // View --------------------------------------------
   return (
     <Pressable onPress={() => onSelect(activity)}>
-    <View style={styles.item}>
-      <Text style={styles.text}>
-        {activity.ActivityID} {activity.ActivityName}
-      </Text>
-    </View>
-  </Pressable>
+      <View style={styles.item}>
+        <Text style={styles.text}>
+          {activity.ActivityID} {activity.ActivityName}
+        </Text>
+      </View>
+    </Pressable>
   );
-}
+};
 
 const styles = StyleSheet.create({
   item: {

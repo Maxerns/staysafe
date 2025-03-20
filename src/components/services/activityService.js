@@ -28,7 +28,8 @@ export const activityService = {
       const response = await apiClient.get(`/activities/users/${userId}`);
       return response.data;
     } catch (error) {
-      return response.data;
+      console.log(`No activities found for user ${userId}:`, error.message);
+      return []; // Return empty array instead of trying to access response.data
     }
   },
 
@@ -64,7 +65,7 @@ export const activityService = {
         `/activities/${activityId}`,
         activityData
       );
-      return response.data;
+      return response.data; // Ensure the response data is returned correctly
     } catch (error) {
       console.error(`Error updating activity ${activityId}:`, error);
       throw error;

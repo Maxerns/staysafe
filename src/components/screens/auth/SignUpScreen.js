@@ -7,6 +7,7 @@ import { AuthContext } from "../../context/authContext";
 
 const SignUpScreen = ({ navigation }) => {
   // Initialisations ---------------------------------
+  const { signUp } = useContext(AuthContext);
   // State -------------------------------------------
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -16,7 +17,6 @@ const SignUpScreen = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { signUp } = useContext(AuthContext);
 
   // Handlers ----------------------------------------
   const handleSignUp = async () => {
