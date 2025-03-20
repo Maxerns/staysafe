@@ -3,6 +3,9 @@ import { Button, ButtonTray } from "../../UI/Button";
 import Icons from "../../UI/Icons.js";
 
 const ContactView = ({ contact, onDelete, onModify }) => {
+  // Initialisations ---------------------------------
+  // State -------------------------------------------
+  // Handlers ----------------------------------------
   const handleDelete = () => onDelete(contact);
 
   const requestDelete = () =>
@@ -14,6 +17,8 @@ const ContactView = ({ contact, onDelete, onModify }) => {
         { text: "Delete", style: "destructive", onPress: handleDelete },
       ]
     );
+
+  // View --------------------------------------------
 
   return (
     <View style={styles.container}>

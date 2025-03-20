@@ -9,10 +9,9 @@ import { AuthContext } from "../../context/authContext";
 const ActivityAddScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
   const { onAdd } = route.params;
-  // State -------------------------------------------
   const { createLocation } = useActivities();
   const { user } = useContext(AuthContext);
-
+  // State -------------------------------------------
   // Handlers ----------------------------------------
   const handleFormSubmit = async (data) => {
     try {

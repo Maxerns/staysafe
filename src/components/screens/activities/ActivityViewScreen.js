@@ -9,15 +9,20 @@ import { Ionicons } from "@expo/vector-icons";
 const ActivityViewScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
   const { activity, onDelete, onModify } = route.params;
-  const { startLiveLocationTracking, stopLiveLocationTracking, updateActivity, loadLocation } = useActivities();
+  const {
+    startLiveLocationTracking,
+    stopLiveLocationTracking,
+    updateActivity,
+    loadLocation,
+  } = useActivities();
+  // State -------------------------------------------
   const [trackingInterval, setTrackingInterval] = useState(null);
   const [locationFrom, setLocationFrom] = useState(null);
   const [locationTo, setLocationTo] = useState(null);
   const [isLoadingLocations, setIsLoadingLocations] = useState(true);
-  
-  // State -------------------------------------------
   // Handlers ----------------------------------------
-  const goToModifyScreen = () => navigation.navigate('ActivityModifyScreen', { activity, onModify });
+  const goToModifyScreen = () =>
+    navigation.navigate("ActivityModifyScreen", { activity, onModify });
 
   const handleStatusChange = async (newStatusId) => {
     try {
@@ -29,11 +34,14 @@ const ActivityViewScreen = ({ navigation, route }) => {
       await updateActivity(activity.ActivityID, updatedActivity);
 
       if (newStatusId === 2) {
-        console.log("Starting live tracking for activity:", activity.ActivityID);
+        console.log(
+          "Starting live tracking for activity:",
+          activity.ActivityID
+        );
         const intervalId = await startLiveLocationTracking(activity.ActivityID);
         console.log("Tracking interval created:", intervalId);
         setTrackingInterval(intervalId);
-        
+
         // Update the local activity state to reflect the new status
         activity.ActivityStatusID = 2;
       } else if (trackingInterval) {
@@ -62,7 +70,10 @@ const ActivityViewScreen = ({ navigation, route }) => {
         key={action.id}
         label={action.label}
         styleButton={{
-          backgroundColor: action.id === activity.ActivityStatusID ? "lightgrey" : action.color,
+          backgroundColor:
+            action.id === activity.ActivityStatusID
+              ? "lightgrey"
+              : action.color,
         }}
         styleLabel={{
           color: action.id === activity.ActivityStatusID ? "darkgrey" : "white",
@@ -78,13 +89,13 @@ const ActivityViewScreen = ({ navigation, route }) => {
       Alert.alert("Loading", "Please wait while locations are being loaded");
       return;
     }
-    
+
     if (!locationFrom || !locationTo) {
       Alert.alert("Error", "Location data not available");
       return;
     }
-    
-    navigation.navigate("MapLocationSelectionScreen", {
+
+    navigation.navigate("ActivityMapScreen", {
       locations: [locationFrom, locationTo],
       isViewMode: true,
       activityStatus: activity.ActivityStatusID, // Fixed typo here (was ActvityStatusID)
@@ -98,7 +109,7 @@ const ActivityViewScreen = ({ navigation, route }) => {
         setIsLoadingLocations(true);
         const fromLocation = await loadLocation(activity.ActivityFromID);
         const toLocation = await loadLocation(activity.ActivityToID);
-        
+
         setLocationFrom(fromLocation[0]);
         setLocationTo(toLocation[0]);
       } catch (error) {
@@ -114,12 +125,17 @@ const ActivityViewScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     console.log("Current activity status:", activity.ActivityStatusID);
-    
+
     if (activity.ActivityStatusID === 2) {
-      console.log("Starting tracking on initial load for activity:", activity.ActivityID);
+      console.log(
+        "Starting tracking on initial load for activity:",
+        activity.ActivityID
+      );
       const initTracking = async () => {
         try {
-          const intervalId = await startLiveLocationTracking(activity.ActivityID);
+          const intervalId = await startLiveLocationTracking(
+            activity.ActivityID
+          );
           console.log("Tracking started with interval:", intervalId);
           if (intervalId) {
             setTrackingInterval(intervalId);
@@ -128,7 +144,7 @@ const ActivityViewScreen = ({ navigation, route }) => {
           console.error("Failed to start tracking:", error);
         }
       };
-      
+
       initTracking();
     }
 
@@ -143,22 +159,34 @@ const ActivityViewScreen = ({ navigation, route }) => {
   // View --------------------------------------------
   return (
     <Screen>
-      <ActivityView activity={activity} onDelete={onDelete} onModify={goToModifyScreen} />
-      
+      <ActivityView
+        activity={activity}
+        onDelete={onDelete}
+        onModify={goToModifyScreen}
+      />
+
       {isLoadingLocations ? (
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading location details...</Text>
         </View>
       ) : (
         <View style={styles.locationsContainer}>
-          <Text style={styles.locationTitle}>From: {locationFrom?.LocationName || 'N/A'}</Text>
-          <Text style={styles.locationAddress}>{locationFrom?.LocationAddress || 'No address'}</Text>
-          
-          <Text style={styles.locationTitle}>To: {locationTo?.LocationName || 'N/A'}</Text>
-          <Text style={styles.locationAddress}>{locationTo?.LocationAddress || 'No address'}</Text>
+          <Text style={styles.locationTitle}>
+            From: {locationFrom?.LocationName || "N/A"}
+          </Text>
+          <Text style={styles.locationAddress}>
+            {locationFrom?.LocationAddress || "No address"}
+          </Text>
+
+          <Text style={styles.locationTitle}>
+            To: {locationTo?.LocationName || "N/A"}
+          </Text>
+          <Text style={styles.locationAddress}>
+            {locationTo?.LocationAddress || "No address"}
+          </Text>
         </View>
       )}
-      
+
       <ButtonTray>
         {renderStatusButtons()}
         <Button
@@ -170,12 +198,12 @@ const ActivityViewScreen = ({ navigation, route }) => {
       </ButtonTray>
     </Screen>
   );
-}
+};
 
 const styles = StyleSheet.create({
   loadingContainer: {
     padding: 15,
-    backgroundColor: "#f8f9fa", 
+    backgroundColor: "#f8f9fa",
     borderRadius: 8,
     marginVertical: 10,
   },
@@ -198,7 +226,7 @@ const styles = StyleSheet.create({
   locationAddress: {
     color: "#6c757d",
     marginBottom: 8,
-  }
+  },
 });
 
 export default ActivityViewScreen;

@@ -21,9 +21,15 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CARD_WIDTH = SCREEN_WIDTH * 0.8;
 const CARD_SPACING = 10;
 
-const MapLocationSelectionScreen = ({ navigation, route }) => {
+const ActivityMapScreen = ({ navigation, route }) => {
+  // Initialisations ---------------------------------
   const { isViewMode, activityStatus, userId } = route.params || {};
   const { getContactLiveLocation } = useContacts();
+
+  const mapRef = useRef(null);
+  const scrollViewRef = useRef(null);
+  const locationRef = useRef([null, null]);
+  const liveLocationIntervalRef = useRef(null);
 
   // State -------------------------------------------
   const [locations, setLocations] = useState([null, null]); // [from, to]
@@ -37,14 +43,9 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
   const [isLiveLocationFetched, setIsLiveLocationFetched] = useState(false);
   const [liveLocationError, setLiveLocationError] = useState(null);
   const [isLiveLocationLoading, setIsLiveLocationLoading] = useState(false);
-  
-  // Refs -------------------------------------------
-  const mapRef = useRef(null);
-  const scrollViewRef = useRef(null);
-  const locationRef = useRef([null, null]);
-  const liveLocationIntervalRef = useRef(null);
 
-  // Reverse geocode function to get address from coordinates
+  // Handlers ----------------------------------------
+
   const reverseGeocode = async (latitude, longitude) => {
     try {
       const response = await axios.get(
@@ -64,7 +65,6 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
     return { address: "", postcode: "" };
   };
 
-  // Set initial locations from route params
   useEffect(() => {
     if (route.params?.locations) {
       const initialLocations = route.params.locations;
@@ -72,9 +72,12 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
         console.log("Setting initial locations:", initialLocations);
         setLocations(initialLocations);
         locationRef.current = initialLocations;
-        
+
         // Set map region based on first location
-        if (initialLocations[0].LocationLatitude && initialLocations[0].LocationLongitude) {
+        if (
+          initialLocations[0].LocationLatitude &&
+          initialLocations[0].LocationLongitude
+        ) {
           setMapRegion({
             latitude: parseFloat(initialLocations[0].LocationLatitude),
             longitude: parseFloat(initialLocations[0].LocationLongitude),
@@ -86,7 +89,6 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
     }
   }, [route.params]);
 
-  // Get user's current location on mount
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -116,15 +118,14 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
     })();
   }, []);
 
-  // Fetch live location when in view mode and activity is started (status 2)
   const fetchLiveLocation = async () => {
     if (!(isViewMode && activityStatus === 2 && userId)) return;
-    
+
     try {
       setIsLiveLocationLoading(true);
       setLiveLocationError(null);
       console.log("Fetching live location for user ID:", userId);
-      
+
       let liveLocation;
       try {
         liveLocation = await getContactLiveLocation(userId);
@@ -135,33 +136,42 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
         liveLocation = await locationService.getCurrentLocation();
         console.log("Using current device location as fallback:", liveLocation);
       }
-      
-      if (liveLocation && !isNaN(liveLocation.latitude) && !isNaN(liveLocation.longitude)) {
+
+      if (
+        liveLocation &&
+        !isNaN(liveLocation.latitude) &&
+        !isNaN(liveLocation.longitude)
+      ) {
         // Add live location as a third point
         const liveLocationPoint = {
           LocationLatitude: liveLocation.latitude,
           LocationLongitude: liveLocation.longitude,
           LocationName: "User's Live Location",
-          LocationAddress: `Last updated: ${new Date(liveLocation.timestamp || Date.now()).toLocaleString()}`,
-          LocationDescription: "Real-time position"
+          LocationAddress: `Last updated: ${new Date(
+            liveLocation.timestamp || Date.now()
+          ).toLocaleString()}`,
+          LocationDescription: "Real-time position",
         };
-        
-        setLocations(prevLocations => {
+
+        setLocations((prevLocations) => {
           const updatedLocations = [...prevLocations];
           updatedLocations[2] = liveLocationPoint;
           return updatedLocations;
         });
-        
+
         // Focus map on live location
         if (mapRef.current) {
-          mapRef.current.animateToRegion({
-            latitude: liveLocation.latitude,
-            longitude: liveLocation.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }, 500);
+          mapRef.current.animateToRegion(
+            {
+              latitude: liveLocation.latitude,
+              longitude: liveLocation.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            },
+            500
+          );
         }
-        
+
         setIsLiveLocationFetched(true);
       } else {
         throw new Error("Received invalid location data");
@@ -175,14 +185,13 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
   };
 
   useEffect(() => {
-    // Initial fetch
     if (isViewMode && activityStatus === 2 && userId) {
       fetchLiveLocation();
-      
+
       // Set up polling every 15 seconds
       liveLocationIntervalRef.current = setInterval(fetchLiveLocation, 15000);
     }
-    
+
     // Cleanup on unmount
     return () => {
       if (liveLocationIntervalRef.current) {
@@ -191,72 +200,71 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
     };
   }, [isViewMode, activityStatus, userId]);
 
-  // Handle map press
-  const handleMapPress = isViewMode 
-    ? () => {} 
+  const handleMapPress = isViewMode
+    ? () => {}
     : async (event) => {
-      const { latitude, longitude } = event.nativeEvent.coordinate;
-      const geoData = await reverseGeocode(latitude, longitude);
-      const newLocation = {
-        LocationLatitude: latitude,
-        LocationLongitude: longitude,
-        LocationAddress: geoData.address,
-        LocationPostcode: geoData.postcode,
-        LocationName: "",
-        LocationDescription: "",
+        const { latitude, longitude } = event.nativeEvent.coordinate;
+        const geoData = await reverseGeocode(latitude, longitude);
+        const newLocation = {
+          LocationLatitude: latitude,
+          LocationLongitude: longitude,
+          LocationAddress: geoData.address,
+          LocationPostcode: geoData.postcode,
+          LocationName: "",
+          LocationDescription: "",
+        };
+
+        if (activePoint === 0 || activePoint === 1) {
+          const newLocations = [...locationRef.current];
+          newLocations[activePoint] = {
+            ...newLocation,
+            LocationName: locationRef.current[activePoint]?.LocationName || "",
+            LocationDescription:
+              locationRef.current[activePoint]?.LocationDescription || "",
+          };
+          locationRef.current = newLocations;
+          setLocations(newLocations);
+          setActivePoint(null);
+        } else {
+          if (!locationRef.current[0]) {
+            const newLocations = [...locationRef.current];
+            newLocations[0] = {
+              ...newLocation,
+              LocationName: "",
+              LocationDescription: "",
+            };
+            locationRef.current = newLocations;
+            setLocations(newLocations);
+            // Scroll to Point A card after a short delay
+            setTimeout(() => {
+              scrollViewRef.current?.scrollTo({ x: 0, animated: true });
+            }, 300);
+          } else if (!locationRef.current[1]) {
+            const newLocations = [...locationRef.current];
+            newLocations[1] = {
+              ...newLocation,
+              LocationName: "",
+              LocationDescription: "",
+            };
+            locationRef.current = newLocations;
+            setLocations(newLocations);
+            // Scroll to Point B card after a short delay
+            setTimeout(() => {
+              scrollViewRef.current?.scrollTo({
+                x: CARD_WIDTH + CARD_SPACING,
+                animated: true,
+              });
+            }, 300);
+          } else {
+            Alert.alert(
+              "Both Points Set",
+              "Tap the edit button on a card to update its location",
+              [{ text: "OK", style: "default" }]
+            );
+          }
+        }
       };
 
-      if (activePoint === 0 || activePoint === 1) {
-        const newLocations = [...locationRef.current];
-        newLocations[activePoint] = {
-          ...newLocation,
-          LocationName: locationRef.current[activePoint]?.LocationName || "",
-          LocationDescription: locationRef.current[activePoint]?.LocationDescription || "",
-        };
-        locationRef.current = newLocations;
-        setLocations(newLocations);
-        setActivePoint(null);
-      } else {
-        if (!locationRef.current[0]) {
-          const newLocations = [...locationRef.current];
-          newLocations[0] = {
-            ...newLocation,
-            LocationName: "",
-            LocationDescription: "",
-          };
-          locationRef.current = newLocations;
-          setLocations(newLocations);
-          // Scroll to Point A card after a short delay
-          setTimeout(() => {
-            scrollViewRef.current?.scrollTo({ x: 0, animated: true });
-          }, 300);
-        } else if (!locationRef.current[1]) {
-          const newLocations = [...locationRef.current];
-          newLocations[1] = {
-            ...newLocation,
-            LocationName: "",
-            LocationDescription: "",
-          };
-          locationRef.current = newLocations;
-          setLocations(newLocations);
-          // Scroll to Point B card after a short delay
-          setTimeout(() => {
-            scrollViewRef.current?.scrollTo({
-              x: CARD_WIDTH + CARD_SPACING,
-              animated: true,
-            });
-          }, 300);
-        } else {
-          Alert.alert(
-            "Both Points Set",
-            "Tap the edit button on a card to update its location",
-            [{ text: "OK", style: "default" }]
-          );
-        }
-      }
-    };
-
-  // Other handlers
   const removePoint = (pointIndex) => {
     const newLocations = [...locationRef.current];
     newLocations[pointIndex] = null;
@@ -307,6 +315,8 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
     );
   };
 
+  // View --------------------------------------------
+
   // View component for location cards
   const LocationCard = (point, pointIndex) => {
     if (!point) {
@@ -325,13 +335,17 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
               </Text>
             </View>
             <Text style={styles.cardTitle}>
-              {isViewMode ? "Location not available" : `Tap on map to set Point ${pointIndex === 0 ? "From" : "To"}`}
+              {isViewMode
+                ? "Location not available"
+                : `Tap on map to set Point ${pointIndex === 0 ? "From" : "To"}`}
             </Text>
           </View>
           <View style={styles.emptyCardContent}>
             <Ionicons name="location-outline" size={32} color="#BDBDBD" />
             <Text style={styles.emptyCardText}>
-              {isViewMode ? "Location data could not be loaded" : "Select a location on the map"}
+              {isViewMode
+                ? "Location data could not be loaded"
+                : "Select a location on the map"}
             </Text>
           </View>
         </View>
@@ -340,19 +354,22 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
 
     const isPointA = pointIndex === 0;
     const isLivePoint = pointIndex === 2;
-    const cardColor = isLivePoint ? "#FFEBEE" : isPointA ? "#E3F2FD" : "#E8F5E9";
-    const badgeColor = isLivePoint ? "#F44336" : isPointA ? "#2196F3" : "#4CAF50";
+    const cardColor = isLivePoint
+      ? "#FFEBEE"
+      : isPointA
+      ? "#E3F2FD"
+      : "#E8F5E9";
+    const badgeColor = isLivePoint
+      ? "#F44336"
+      : isPointA
+      ? "#2196F3"
+      : "#4CAF50";
     const pointLabel = isLivePoint ? "Live" : pointIndex === 0 ? "From" : "To";
 
     return (
       <View style={[styles.card, { backgroundColor: cardColor }]}>
         <View style={styles.cardHeader}>
-          <View
-            style={[
-              styles.pointBadge,
-              { backgroundColor: badgeColor },
-            ]}
-          >
+          <View style={[styles.pointBadge, { backgroundColor: badgeColor }]}>
             <Text style={styles.pointBadgeText}>{pointLabel}</Text>
           </View>
           <Text style={styles.cardTitle} numberOfLines={1}>
@@ -384,8 +401,14 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
 
         {point.LocationDescription && (
           <View style={styles.descriptionContainer}>
-            <Ionicons name="information-circle-outline" size={16} color="#757575" />
-            <Text style={styles.descriptionText}>{point.LocationDescription}</Text>
+            <Ionicons
+              name="information-circle-outline"
+              size={16}
+              color="#757575"
+            />
+            <Text style={styles.descriptionText}>
+              {point.LocationDescription}
+            </Text>
           </View>
         )}
 
@@ -476,8 +499,13 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
                 longitude: parseFloat(location.LocationLongitude) || 0,
               }}
               pinColor={index === 2 ? "red" : index === 0 ? "blue" : "green"} // Red for live location
-              title={location.LocationName || (index === 2 ? "Live Location" : index === 0 ? "From" : "To")}
-              description={location.LocationDescription || location.LocationAddress}
+              title={
+                location.LocationName ||
+                (index === 2 ? "Live Location" : index === 0 ? "From" : "To")
+              }
+              description={
+                location.LocationDescription || location.LocationAddress
+              }
             />
           ) : null
         )}
@@ -526,14 +554,28 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
           {LocationCard(locations[1], 1)}
           {locations[2] && LocationCard(locations[2], 2)}
         </ScrollView>
-        
+
         <View style={styles.paginationContainer}>
-          <View style={[styles.paginationDot, { backgroundColor: locations[0] ? '#2196F3' : '#BDBDBD' }]} />
-          <View style={[styles.paginationDot, { backgroundColor: locations[1] ? '#4CAF50' : '#BDBDBD' }]} />
-          {locations[2] && <View style={[styles.paginationDot, { backgroundColor: '#F44336' }]} />}
+          <View
+            style={[
+              styles.paginationDot,
+              { backgroundColor: locations[0] ? "#2196F3" : "#BDBDBD" },
+            ]}
+          />
+          <View
+            style={[
+              styles.paginationDot,
+              { backgroundColor: locations[1] ? "#4CAF50" : "#BDBDBD" },
+            ]}
+          />
+          {locations[2] && (
+            <View
+              style={[styles.paginationDot, { backgroundColor: "#F44336" }]}
+            />
+          )}
         </View>
       </View>
-      
+
       {!isViewMode && canSave && (
         <View style={styles.saveButtonContainer}>
           <Button
@@ -546,7 +588,10 @@ const MapLocationSelectionScreen = ({ navigation, route }) => {
       )}
 
       {isViewMode && !isLiveLocationFetched && activityStatus === 2 && (
-        <TouchableOpacity style={styles.refreshButton} onPress={fetchLiveLocation}>
+        <TouchableOpacity
+          style={styles.refreshButton}
+          onPress={fetchLiveLocation}
+        >
           <Ionicons name="refresh" size={24} color="#FFFFFF" />
           <Text style={styles.refreshButtonText}>Refresh Live Location</Text>
         </TouchableOpacity>
@@ -784,4 +829,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MapLocationSelectionScreen;
+export default ActivityMapScreen;

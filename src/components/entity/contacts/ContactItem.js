@@ -1,20 +1,18 @@
 import { StyleSheet, Text, View, Pressable } from "react-native";
 
-const ContactItem = ({contact, onSelect}) => {
+const ContactItem = ({ contact, onSelect }) => {
   // Initialisations ---------------------------------
   // State -------------------------------------------
   // Handlers ----------------------------------------
   // View --------------------------------------------
   return (
     <Pressable key={contact.ContactID} onPress={() => onSelect(contact)}>
-    <View style={styles.item}>
-      <Text style={styles.text}>
-        {contact.ContactLabel}
-      </Text>
-    </View>
-  </Pressable>
+      <View style={styles.item}>
+        <Text style={styles.text}>{contact.ContactLabel}</Text>
+      </View>
+    </Pressable>
   );
-}
+};
 
 const styles = StyleSheet.create({
   item: {

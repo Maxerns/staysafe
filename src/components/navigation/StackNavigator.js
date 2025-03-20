@@ -4,7 +4,7 @@ import DrawerNavigator from "./DrawerNavigator";
 import ActivityAddScreen from "../screens/activities/ActivityAddScreen";
 import ActivityViewScreen from "../screens/activities/ActivityViewScreen";
 import ActivityModifyScreen from "../screens/activities/ActivityModifyScreen";
-import MapLocationSelectionScreen from "../screens/activities/MapLocationSelectionScreen";
+import ActivityMapScreen from "../screens/activities/ActivityMapScreen";
 import SignInScreen from "../screens/auth/SignInScreen";
 import SignUpScreen from "../screens/auth/SignUpScreen";
 import { AuthContext } from "../context/authContext";
@@ -84,8 +84,8 @@ const AppStack = () => (
       options={{ title: "Modify Contact" }}
     />
     <Stack.Screen
-      name="MapLocationSelectionScreen"
-      component={MapLocationSelectionScreen}
+      name="ActivityMapScreen"
+      component={ActivityMapScreen}
       options={{ title: "Select Locations" }}
     />
   </Stack.Navigator>

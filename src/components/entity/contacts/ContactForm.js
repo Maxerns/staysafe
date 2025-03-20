@@ -17,14 +17,15 @@ const ContactForm = ({
   onSave,
   onCancel,
 }) => {
-  // State for form fields
+  // Initialisations ---------------------------------
+  // State -------------------------------------------
   const [contact, setContact] = useState(initialContact || defaultContact);
   const [username, setUsername] = useState(initialContactUsername || "");
   const [isValidating, setIsValidating] = useState(false);
   const [usernameError, setUsernameError] = useState(null);
   const [isUserFound, setIsUserFound] = useState(false);
 
-  // Handlers
+  // Handlers ----------------------------------------
   const handleSubmit = async () => {
     // Validate form fields
     if (!contact.ContactLabel.trim()) {
@@ -115,6 +116,7 @@ const ContactForm = ({
     }
   };
 
+  // View --------------------------------------------
   const submitLabel = initialContact ? "Update Contact" : "Add Contact";
   const submitIcon = initialContact ? <Icons.Edit /> : <Icons.Add />;
 
@@ -185,7 +187,7 @@ const styles = StyleSheet.create({
   successText: {
     color: "green",
     fontSize: 14,
-  }
+  },
 });
 
 export default ContactForm;

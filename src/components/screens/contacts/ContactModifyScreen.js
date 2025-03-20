@@ -3,10 +3,10 @@ import ContactForm from "../../entity/contacts/ContactForm";
 import intialUsers from "../../../data/users.js";
 
 const ContactModifyScreen = ({ navigation, route }) => {
-  // Expect route.params to include the contact to modify and onModify callback
+  // Initialisations ---------------------------------
   const { contact, onModify } = route.params;
-
-  // Look up the current username by the contact's reference id
+  // State -------------------------------------------
+  // Handlers ----------------------------------------
   const foundUser = intialUsers.find(
     (user) => user.UserID === contact.ContactContactID
   );
@@ -18,11 +18,13 @@ const ContactModifyScreen = ({ navigation, route }) => {
       ...modifiedContact,
       ContactUserID: contact.ContactUserID,
     };
-    
+
     onModify(updatedContact);
   };
 
   const handleCancel = navigation.goBack;
+
+  // View --------------------------------------------
 
   return (
     <Screen>

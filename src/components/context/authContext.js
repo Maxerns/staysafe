@@ -1,24 +1,24 @@
-import React, { createContext, useState, useEffect } from 'react';
-import { authService } from '../services/authService';
-import useStore from '../store/useStore';
+import React, { createContext, useState, useEffect } from "react";
+import { authService } from "../services/authService";
+import useStore from "../store/useStore";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const initialUserState = { isAuthenticated: false, info: null };
   const [isLoading, setIsLoading] = useState(true);
-  const [user, saveUser] = useStore('user', initialUserState);
+  const [user, saveUser] = useStore("user", initialUserState);
 
   const signIn = async (credentials) => {
     try {
       const response = await authService.login(credentials);
       const { user: userInfo } = response;
-      
+
       const userData = {
         isAuthenticated: true,
-        info: userInfo
+        info: userInfo,
       };
-      
+
       await saveUser(userData);
       return response;
     } catch (error) {
@@ -30,21 +30,22 @@ export const AuthProvider = ({ children }) => {
     try {
       // Store the original password before it gets hashed
       const plainPassword = userData.UserPassword;
-      
+
       const response = await authService.register({
         ...userData,
         UserLatitude: 0,
         UserLongitude: 0,
         UserTimestamp: 0,
-        UserImageURL: 'https://static.generated.photos/vue-static/face-generator/landing/wall/13.jpg',
+        UserImageURL:
+          "https://static.generated.photos/vue-static/face-generator/landing/wall/13.jpg",
       });
-      
+
       // After successful registration, use the plaintext password for login
       await signIn({
         username: userData.UserUsername,
         password: plainPassword,
       });
-      
+
       return response;
     } catch (error) {
       throw error;

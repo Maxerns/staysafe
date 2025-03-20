@@ -9,9 +9,9 @@ import { AuthContext } from "../../context/authContext";
 const ActivityModifyScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
   const { activity, onModify } = route.params;
-  // State -------------------------------------------
   const { createLocation, loadLocation } = useActivities();
   const { user } = useContext(AuthContext);
+  // State -------------------------------------------
   const [locations, setLocations] = useState([null, null]);
 
   // Load locations on mount

@@ -8,12 +8,12 @@ import {
   Platform,
 } from "react-native";
 import React, { useState } from "react";
-import Checkbox from 'expo-checkbox';
+import Checkbox from "expo-checkbox";
 import { ButtonTray, Button } from "../UI/Button.js";
 import Icons from "../UI/Icons.js";
 import { SelectList } from "react-native-dropdown-select-list";
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { TouchableOpacity } from "react-native";
 
 const Form = ({ children, onSubmit, onCancel, submitLabel, submitIcon }) => {
@@ -34,7 +34,11 @@ const InputText = ({ label, value, onChange }) => {
   return (
     <View style={styles.item}>
       <Text style={styles.itemLabel}>{label}</Text>
-      <TextInput value={value} onChangeText={onChange} style={styles.itemInput} />
+      <TextInput
+        value={value}
+        onChangeText={onChange}
+        style={styles.itemInput}
+      />
     </View>
   );
 };
@@ -136,7 +140,9 @@ const InputDate = ({ label, value, onChange }) => {
       <View style={styles.item}>
         <Text style={styles.itemLabel}>{label}</Text>
         <TouchableOpacity onPress={openAndroidPicker} style={styles.itemInput}>
-        <Text>{value ? new Date(value).toLocaleString() : "Select Date & Time"}</Text>
+          <Text>
+            {value ? new Date(value).toLocaleString() : "Select Date & Time"}
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -146,17 +152,17 @@ const InputDate = ({ label, value, onChange }) => {
     const dateValue = value ? new Date(value) : new Date();
     return (
       <View style={styles.item}>
-      <Text style={styles.itemLabel}>{label}</Text>
+        <Text style={styles.itemLabel}>{label}</Text>
         <DateTimePicker
-        value={dateValue}
-        mode="datetime"
-        display="default"
-        onChange={(event, selectedDate) => {
-          setShow(false);
-          if (selectedDate) {
-          onChange(selectedDate.toISOString());
-          }
-        }}
+          value={dateValue}
+          mode="datetime"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setShow(false);
+            if (selectedDate) {
+              onChange(selectedDate.toISOString());
+            }
+          }}
         />
       </View>
     );

@@ -82,7 +82,9 @@ export const ActivityProvider = ({ children }) => {
       // Replace the updated activity in the state
       setActivities((prevActivities) =>
         prevActivities.map((activity) =>
-          activity.ActivityID === activityId ? { ...activity, ...updatedActivity } : activity
+          activity.ActivityID === activityId
+            ? { ...activity, ...updatedActivity }
+            : activity
         )
       );
 
@@ -154,16 +156,16 @@ export const ActivityProvider = ({ children }) => {
   const loadLocation = async (locationId) => {
     try {
       setLoading(true);
-      
+
       if (!locationId) {
         throw new Error("Location ID is required");
       }
-      
+
       const location = await activityService.getLocation(locationId);
-      
+
       // Log the response to help with debugging
       console.log(`Location ${locationId} data:`, location);
-      
+
       return location;
     } catch (error) {
       console.error(`Error loading location ${locationId}:`, error);
@@ -177,12 +179,15 @@ export const ActivityProvider = ({ children }) => {
   const startLiveLocationTracking = async (activityId) => {
     try {
       console.log("Starting live location tracking for activity:", activityId);
-      
+
       // Update location immediately
       await updateLocationOnce(activityId);
-      
+
       // Start periodic updates every 15 seconds
-      const intervalId = setInterval(() => updateLocationOnce(activityId), 15000);
+      const intervalId = setInterval(
+        () => updateLocationOnce(activityId),
+        15000
+      );
       console.log("Created interval for tracking:", intervalId);
       return intervalId; // Return interval ID to stop tracking later
     } catch (error) {
@@ -196,16 +201,16 @@ export const ActivityProvider = ({ children }) => {
       console.log("Updating location for activity:", activityId);
       const location = await locationService.getCurrentLocation();
       console.log("Current location:", location);
-      
+
       await locationService.updateUserLocation(user.info.id, location);
-      
+
       await locationService.addPosition({
         PositionActivityID: activityId,
         PositionLatitude: location.latitude,
         PositionLongitude: location.longitude,
         PositionTimestamp: location.timestamp,
       });
-      
+
       console.log("Location updated successfully");
       return true;
     } catch (error) {
