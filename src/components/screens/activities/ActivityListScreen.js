@@ -1,10 +1,16 @@
 import { useContext, useState } from "react";
-import { Text, StyleSheet, View } from "react-native";
-import { ButtonTray, Button } from "../../UI/Button.js";
-import Icons from "../../UI/Icons.js";
+import {
+  Text,
+  StyleSheet,
+  View,
+  Image,
+  ActivityIndicator,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import ActivityList from "../../entity/activities/ActivityList";
 import Screen from "../../layout/Screen";
-import useStore from "../../store/useStore.js";
 import { useActivities } from "../../context/activityContext";
 import { AuthContext } from "../../context/authContext.js";
 
@@ -20,7 +26,10 @@ const ActivityListScreen = ({ navigation }) => {
     updateActivity,
     refreshActivities,
   } = useActivities();
+
   // State -------------------------------------------
+  const [refreshing, setRefreshing] = useState(false);
+
   // Handlers ----------------------------------------
   const onAdd = async (activityData) => {
     try {
@@ -28,7 +37,6 @@ const ActivityListScreen = ({ navigation }) => {
       navigation.goBack();
     } catch (err) {
       console.error("Error adding activity:", err);
-      // Handle error (show alert, etc.)
     }
   };
 
@@ -38,7 +46,6 @@ const ActivityListScreen = ({ navigation }) => {
       navigation.goBack();
     } catch (err) {
       console.error("Error deleting activity:", err);
-      // Handle error (show alert, etc.)
     }
   };
 
@@ -48,73 +55,165 @@ const ActivityListScreen = ({ navigation }) => {
       navigation.goBack();
     } catch (err) {
       console.error("Error updating activity:", err);
-      // Handle error (show alert, etc.)
     }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refreshActivities();
+    setRefreshing(false);
   };
 
   const goToViewScreen = (activity) =>
     navigation.navigate("ActivityViewScreen", { activity, onDelete, onModify });
+
   const goToAddScreen = () =>
     navigation.navigate("ActivityAddScreen", { onAdd });
+
   // View --------------------------------------------
-
-  if (loading) {
-    return (
-      <Screen>
-        <Text>Loading...</Text>
-      </Screen>
-    );
-  }
-
   return (
-    <Screen>
-      <ButtonTray>
-        <Text style={styles.welcome}>Welcome Back {user.info.username}</Text>
-        <Button label="Add" icon={<Icons.Add />} onClick={goToAddScreen} />
-      </ButtonTray>
+    <Screen style={styles.screen}>
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../../../assets/StaySafeVector.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
 
-      {error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>
-            Something went wrong. Please try again.
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.title}>Activities</Text>
+          <Text style={styles.subtitle}>
+            Welcome back, {user.info.username}
           </Text>
-          <Button label="Retry" onClick={refreshActivities} />
+        </View>
+      </View>
+
+      <TouchableOpacity style={styles.addButton} onPress={goToAddScreen}>
+        <Ionicons name="add" size={24} color="white" />
+        <Text style={styles.addButtonText}>Create Activity</Text>
+      </TouchableOpacity>
+
+      {loading && !refreshing ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#122f76" />
+          <Text style={styles.loadingText}>Loading your activities...</Text>
+        </View>
+      ) : error ? (
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle" size={60} color="#ff3b3b" />
+          <Text style={styles.errorText}>Something went wrong.</Text>
+          <Text style={styles.errorSubtext}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
+            <Ionicons name="refresh" size={16} color="white" />
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
         </View>
       ) : activities.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>
-            You don't have any activities yet.
+          <Ionicons name="calendar-outline" size={80} color="#d0d0d0" />
+          <Text style={styles.emptyText}>No activities yet</Text>
+          <Text style={styles.emptySubtext}>
+            Create a new activity to track your journeys and stay safe
           </Text>
-          <Button
-            label="Add Activity"
-            icon={<Icons.Add />}
-            onClick={goToAddScreen}
-          />
+          <TouchableOpacity
+            style={styles.emptyAddButton}
+            onPress={goToAddScreen}
+          >
+            <Ionicons name="add" size={20} color="white" />
+            <Text style={styles.emptyAddButtonText}>Create First Activity</Text>
+          </TouchableOpacity>
         </View>
       ) : (
-        <ActivityList activities={activities} onSelect={goToViewScreen} />
+        <View style={styles.listContainer}>
+          <ActivityList activities={activities} onSelect={goToViewScreen} />
+
+          {refreshing && (
+            <View style={styles.refreshIndicator}>
+              <ActivityIndicator size="small" color="#122f76" />
+            </View>
+          )}
+        </View>
       )}
     </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  welcome: {
-    marginTop: 16,
-    marginBottom: 5,
-    fontSize: 24,
-    fontWeight: "bold",
+  screen: {
+    backgroundColor: "#f8f9fa",
+    flex: 1,
   },
-  emptyContainer: {
+  header: {
+    paddingTop: 20,
+    paddingBottom: 15,
+    paddingHorizontal: 20,
+    backgroundColor: "white",
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  logo: {
+    width: 120,
+    height: 60,
+  },
+  headerTextContainer: {
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#122f76",
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "gray",
+    marginTop: 5,
+  },
+  addButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#122f76",
+    marginHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  addButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
-  emptyText: {
-    fontSize: 18,
-    marginBottom: 20,
-    textAlign: "center",
+  loadingText: {
+    marginTop: 20,
+    fontSize: 16,
+    color: "#777",
+  },
+  listContainer: {
+    flex: 1,
   },
   errorContainer: {
     flex: 1,
@@ -123,10 +222,69 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: "red",
-    fontSize: 16,
-    marginBottom: 20,
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+    marginTop: 20,
+  },
+  errorSubtext: {
+    fontSize: 14,
+    color: "#777",
+    marginTop: 10,
     textAlign: "center",
+  },
+  retryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#ff3b3b",
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 25,
+    marginTop: 20,
+  },
+  retryButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 40,
+  },
+  emptyText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#555",
+    marginTop: 20,
+  },
+  emptySubtext: {
+    fontSize: 16,
+    color: "#888",
+    marginTop: 10,
+    textAlign: "center",
+    lineHeight: 24,
+  },
+  emptyAddButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#ff3b3b",
+    paddingVertical: 14,
+    paddingHorizontal: 25,
+    borderRadius: 30,
+    marginTop: 30,
+  },
+  emptyAddButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  refreshIndicator: {
+    alignItems: "center",
+    paddingVertical: 15,
   },
 });
 
