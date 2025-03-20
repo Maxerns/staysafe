@@ -1,5 +1,5 @@
 import { useContext, useState } from "react"; 
-import { Text, StyleSheet } from "react-native";
+import { Text, StyleSheet, View } from "react-native";
 import { ButtonTray, Button } from "../../UI/Button.js";
 import Icons from "../../UI/Icons.js";
 import ActivityList from "../../entity/activities/ActivityList";
@@ -62,10 +62,23 @@ const ActivityListScreen =  ({ navigation }) => {
   return (
     <Screen>
       <ButtonTray>
-      <Text style={styles.welcome}>Welcome Back {user.info.username}</Text>
-      <Button label="Add" icon={<Icons.Add />} onClick={goToAddScreen} />
+        <Text style={styles.welcome}>Welcome Back {user.info.username}</Text>
+        <Button label="Add" icon={<Icons.Add />} onClick={goToAddScreen} />
       </ButtonTray>
-      <ActivityList activities={activities} onSelect={goToViewScreen} />
+      
+      {error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Something went wrong. Please try again.</Text>
+          <Button label="Retry" onClick={refreshActivities} />
+        </View>
+      ) : activities.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>You don't have any activities yet.</Text>
+          <Button label="Add Activity" icon={<Icons.Add />} onClick={goToAddScreen} />
+        </View>
+      ) : (
+        <ActivityList activities={activities} onSelect={goToViewScreen} />
+      )}
     </Screen>
   );
 };
@@ -77,6 +90,29 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
   },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 18,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  }
 });
 
 export default ActivityListScreen;

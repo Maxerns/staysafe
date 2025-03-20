@@ -26,52 +26,43 @@ const ContactForm = ({
 
   // Handlers
   const handleSubmit = async () => {
+    // Validate form fields
     if (!contact.ContactLabel.trim()) {
-      // Validate label is not empty
       setUsernameError("Contact label is required");
       return;
     }
 
-    // If user hasn't been verified yet and we don't have a ContactContactID
-    if (!isUserFound && !contact.ContactContactID) {
-      if (!username.trim()) {
-        setUsernameError("Username is required");
-        return;
-      }
-
-      // Auto-validate username
-      try {
-        setIsValidating(true);
-        const foundUser = await contactService.findUserByUsername(username);
-
-        if (foundUser) {
-          // Update contact with found user ID
-          const updatedContact = {
-            ...contact,
-            ContactContactID: foundUser.UserID,
-          };
-
-          // Submit form with updated contact data
-          await onSave(updatedContact);
-          onCancel();
-          return;
-        } else {
-          setUsernameError(`User '${username}' not found`);
-          return;
-        }
-      } catch (error) {
-        setUsernameError("Error validating username");
-        console.error("Error validating username:", error);
-        return;
-      } finally {
-        setIsValidating(false);
-      }
+    if (!username.trim()) {
+      setUsernameError("Username is required");
+      return;
     }
 
-    // Submit form with ContactContactID properly set
-    await onSave(contact);
-    // Go back to contact drawer after adding contact
-    onCancel();
+    try {
+      setIsValidating(true);
+      setUsernameError(null);
+
+      // Automatically validate username
+      const foundUser = await contactService.findUserByUsername(username);
+
+      if (foundUser) {
+        // Update contact with found user ID
+        const updatedContact = {
+          ...contact,
+          ContactContactID: foundUser.UserID,
+        };
+
+        // Submit form with updated contact data
+        await onSave(updatedContact);
+        onCancel();
+      } else {
+        setUsernameError(`User '${username}' not found`);
+      }
+    } catch (error) {
+      console.error("Error validating username:", error);
+      setUsernameError("Error validating username");
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   const handleUsernameChange = (value) => {
@@ -80,6 +71,21 @@ const ContactForm = ({
     setIsUserFound(false);
   };
 
+  const handleLabelChange = (value) => {
+    setContact({
+      ...contact,
+      ContactLabel: value,
+    });
+  };
+
+  // Check username when form loads if initialContactUsername is provided
+  useEffect(() => {
+    if (initialContactUsername) {
+      validateUsername();
+    }
+  }, [initialContactUsername]);
+
+  // Keep for internal use only - won't be exposed in UI
   const validateUsername = async () => {
     if (!username.trim()) {
       setUsernameError("Username is required");
@@ -108,20 +114,6 @@ const ContactForm = ({
       setIsValidating(false);
     }
   };
-
-  const handleLabelChange = (value) => {
-    setContact({
-      ...contact,
-      ContactLabel: value,
-    });
-  };
-
-  // Check username when form loads if initialContactUsername is provided
-  useEffect(() => {
-    if (initialContactUsername) {
-      validateUsername();
-    }
-  }, [initialContactUsername]);
 
   const submitLabel = initialContact ? "Update Contact" : "Add Contact";
   const submitIcon = initialContact ? <Icons.Edit /> : <Icons.Add />;
@@ -163,12 +155,6 @@ const ContactForm = ({
         value={contact.ContactLabel}
         onChange={handleLabelChange}
       />
-
-      <View style={styles.actionContainer}>
-        <Text style={styles.actionText} onPress={validateUsername}>
-          Verify Username
-        </Text>
-      </View>
     </Form>
   );
 };
@@ -199,16 +185,7 @@ const styles = StyleSheet.create({
   successText: {
     color: "green",
     fontSize: 14,
-  },
-  actionContainer: {
-    marginVertical: 10,
-    alignItems: "flex-end",
-  },
-  actionText: {
-    color: "blue",
-    fontSize: 14,
-    textDecorationLine: "underline",
-  },
+  }
 });
 
 export default ContactForm;
