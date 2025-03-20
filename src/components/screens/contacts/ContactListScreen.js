@@ -80,54 +80,94 @@ const ContactListScreen = ({ navigation }) => {
     navigation.navigate("ContactAddScreen", { onAdd });
 
   // View --------------------------------------------
-  if (loading) {
-    return (
-      <Screen>
-        <ActivityIndicator size="large" color="#000" />
-        <Text style={styles.loadingText}>Loading contacts...</Text>
-      </Screen>
-    );
-  }
-
   return (
-    <Screen>
-      <ButtonTray>
-        <Text style={styles.welcome}>Contacts</Text>
-        <Button label="Add" icon={<Icons.Add />} onClick={goToAddScreen} />
-      </ButtonTray>
+    <Screen style={styles.screen}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Contacts</Text>
+        <Text style={styles.subtitle}>Manage your StaySafe contacts</Text>
+      </View>
 
-      {error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Error: {error}</Text>
-          <Button label="Retry" onClick={refreshContacts} />
-        </View>
-      ) : contacts.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No contacts found</Text>
-          <Button
-            label="Add Contact"
-            icon={<Icons.Add />}
-            onClick={goToAddScreen}
-          />
-        </View>
-      ) : (
-        <ContactList contacts={contacts} onSelect={goToViewScreen} />
-      )}
+      <View style={styles.contentContainer}>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#122f76" />
+            <Text style={styles.loadingText}>Loading contacts...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Error: {error}</Text>
+            <Button
+              label="Retry"
+              onClick={refreshContacts}
+              styleButton={styles.retryButton}
+              styleLabel={styles.retryButtonText}
+            />
+          </View>
+        ) : contacts.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No contacts found</Text>
+          </View>
+        ) : (
+          <View style={styles.listContainer}>
+            <ContactList contacts={contacts} onSelect={goToViewScreen} />
+          </View>
+        )}
+      </View>
+
+      <ButtonTray style={styles.buttonTray}>
+        <Button
+          label="Add New Contact"
+          icon={<Icons.Add />}
+          onClick={goToAddScreen}
+          styleButton={styles.addButton}
+          styleLabel={styles.addButtonText}
+        />
+      </ButtonTray>
     </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  welcome: {
-    marginTop: 16,
-    marginBottom: 5,
-    fontSize: 24,
+  screen: {
+    backgroundColor: "#f8f9fa",
+    padding: 20,
+  },
+  header: {
+    marginBottom: 30,
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 28,
     fontWeight: "bold",
+    color: "#122f76",
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "gray",
+    marginTop: 5,
+  },
+  contentContainer: {
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
   },
   loadingText: {
     marginTop: 10,
     fontSize: 16,
     textAlign: "center",
+    color: "#555",
   },
   errorContainer: {
     flex: 1,
@@ -136,9 +176,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: "red",
+    color: "#ff3b3b",
     fontSize: 16,
     textAlign: "center",
+    marginBottom: 20,
   },
   emptyContainer: {
     flex: 1,
@@ -150,6 +191,31 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 20,
     textAlign: "center",
+    color: "#555",
+  },
+  listContainer: {
+    flex: 1,
+  },
+  buttonTray: {
+    marginTop: 20,
+    justifyContent: "center",
+  },
+  addButton: {
+    backgroundColor: "#122f76",
+    borderColor: "#122f76",
+  },
+  addButtonText: {
+    color: "white",
+    fontWeight: "600",
+  },
+  retryButton: {
+    backgroundColor: "#ff3b3b",
+    borderColor: "#ff3b3b",
+    minWidth: 160,
+  },
+  retryButtonText: {
+    color: "white",
+    fontWeight: "600",
   },
 });
 

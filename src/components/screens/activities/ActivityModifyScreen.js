@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Alert } from "react-native";
+import { View, StyleSheet, Alert, Image, Text, ScrollView } from "react-native";
 import ActivityForm from "../../entity/activities/ActivityForm";
 import Screen from "../../layout/Screen";
 import { useActivities } from "../../context/activityContext";
@@ -63,23 +63,93 @@ const ActivityModifyScreen = ({ navigation, route }) => {
 
   // View --------------------------------------------
   return (
-    <Screen>
-      <View style={styles.innerContainer}>
-        <ActivityForm
-          originalActivity={activity}
-          onSubmit={handleFormSubmit}
-          onCancel={() => navigation.goBack()}
-          navigation={navigation}
-          initialLocations={locations}
-        />
+    <Screen style={styles.screen}>
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../../../assets/StaySafeVector.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.title}>Edit Activity</Text>
+          <Text style={styles.subtitle}>
+            {activity.ActivityName ||
+              activity.ActivityLabel ||
+              "Update journey details"}
+          </Text>
+        </View>
       </View>
+
+      <ScrollView style={styles.contentContainer}>
+        <View style={styles.formContainer}>
+          <ActivityForm
+            originalActivity={activity}
+            onSubmit={handleFormSubmit}
+            onCancel={() => navigation.goBack()}
+            navigation={navigation}
+            initialLocations={locations}
+          />
+        </View>
+      </ScrollView>
     </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  innerContainer: {
-    padding: 10,
+  screen: {
+    backgroundColor: "#f8f9fa",
+    flex: 1,
+  },
+  header: {
+    paddingTop: 20,
+    paddingBottom: 15,
+    paddingHorizontal: 20,
+    backgroundColor: "white",
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  logo: {
+    width: 120,
+    height: 60,
+  },
+  headerTextContainer: {
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#122f76",
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "gray",
+    marginTop: 5,
+    textAlign: "center",
+  },
+  contentContainer: {
+    padding: 20,
+  },
+  formContainer: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
 });
 

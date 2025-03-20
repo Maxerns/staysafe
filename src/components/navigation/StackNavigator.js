@@ -1,4 +1,5 @@
 import React, { useContext } from "react";
+import { StyleSheet } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import DrawerNavigator from "./DrawerNavigator";
 import ActivityAddScreen from "../screens/activities/ActivityAddScreen";
@@ -14,14 +15,34 @@ import ContactModifyScreen from "../screens/contacts/ContactModifyScreen";
 
 const Stack = createNativeStackNavigator();
 
+// Shared screen options for consistent styling
+const screenOptions = {
+  headerStyle: {
+    backgroundColor: "#122f76",
+  },
+  headerTitleStyle: {
+    fontWeight: "600",
+    fontSize: 18,
+  },
+  headerTintColor: "white",
+  headerShadowVisible: true,
+  animation: "slide_from_right",
+  contentStyle: {
+    backgroundColor: "#f8f9fa",
+  },
+  // Back button settings
+  headerBackTitleVisible: false,
+  headerLeftContainerStyle: {
+    paddingLeft: 5,
+  },
+};
+
 const AuthStack = () => (
   <Stack.Navigator
     initialRouteName="SignInScreen"
     screenOptions={{
-      headerStyle: {
-        backgroundColor: "black",
-      },
-      headerTintColor: "white",
+      ...screenOptions,
+      headerShown: false,
     }}
   >
     <Stack.Screen
@@ -38,55 +59,67 @@ const AuthStack = () => (
 );
 
 const AppStack = () => (
-  <Stack.Navigator
-    initialRouteName="Drawer"
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: "black",
-      },
-      headerTintColor: "white",
-    }}
-  >
+  <Stack.Navigator initialRouteName="Drawer" screenOptions={screenOptions}>
     <Stack.Screen
       name="Drawer"
       component={DrawerNavigator}
       options={{ headerShown: false }}
     />
+
+    {/* Activity Screens */}
     <Stack.Screen
       name="ActivityAddScreen"
       component={ActivityAddScreen}
-      options={{ title: "Add Activity" }}
+      options={{
+        title: "Add Activity",
+        animation: "slide_from_bottom",
+      }}
     />
     <Stack.Screen
       name="ActivityViewScreen"
       component={ActivityViewScreen}
-      options={{ title: "View Activity" }}
+      options={{
+        title: "Activity Details",
+      }}
     />
     <Stack.Screen
       name="ActivityModifyScreen"
       component={ActivityModifyScreen}
-      options={{ title: "Modify Activity" }}
-    />
-
-    <Stack.Screen
-      name="ContactAddScreen"
-      component={ContactAddScreen}
-      options={{ title: "Add Contact" }}
-    />
-    <Stack.Screen
-      name="ContactViewScreen"
-      component={ContactViewScreen}
-      options={{ title: "View Contact" }}
-    />
-    <Stack.Screen
-      name="ContactModifyScreen"
-      component={ContactModifyScreen}
-      options={{ title: "Modify Contact" }}
+      options={{
+        title: "Edit Activity",
+      }}
     />
     <Stack.Screen
       name="ActivityMapScreen"
       component={ActivityMapScreen}
-      options={{ title: "Select Locations" }}
+      options={{
+        title: "Select Locations",
+        animation: "fade_from_bottom",
+      }}
+    />
+
+    {/* Contact Screens */}
+    <Stack.Screen
+      name="ContactAddScreen"
+      component={ContactAddScreen}
+      options={{
+        title: "Add Contact",
+        animation: "slide_from_bottom",
+      }}
+    />
+    <Stack.Screen
+      name="ContactViewScreen"
+      component={ContactViewScreen}
+      options={{
+        title: "Contact Details",
+      }}
+    />
+    <Stack.Screen
+      name="ContactModifyScreen"
+      component={ContactModifyScreen}
+      options={{
+        title: "Edit Contact",
+      }}
     />
   </Stack.Navigator>
 );

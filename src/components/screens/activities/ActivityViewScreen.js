@@ -3,7 +3,7 @@ import ActivityView from "../../entity/activities/ActivityView";
 import { useActivities } from "../../context/activityContext";
 import { useState, useEffect } from "react";
 import { Button, ButtonTray } from "../../UI/Button";
-import { Alert, Text, StyleSheet, View } from "react-native";
+import { Alert, Text, StyleSheet, View, Image, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 const ActivityViewScreen = ({ navigation, route }) => {
@@ -158,54 +158,124 @@ const ActivityViewScreen = ({ navigation, route }) => {
 
   // View --------------------------------------------
   return (
-    <Screen>
-      <ActivityView
-        activity={activity}
-        onDelete={onDelete}
-        onModify={goToModifyScreen}
-      />
-
-      {isLoadingLocations ? (
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading location details...</Text>
+    <Screen style={styles.screen}>
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../../../assets/StaySafeVector.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
         </View>
-      ) : (
-        <View style={styles.locationsContainer}>
-          <Text style={styles.locationTitle}>
-            From: {locationFrom?.LocationName || "N/A"}
-          </Text>
-          <Text style={styles.locationAddress}>
-            {locationFrom?.LocationAddress || "No address"}
-          </Text>
 
-          <Text style={styles.locationTitle}>
-            To: {locationTo?.LocationName || "N/A"}
-          </Text>
-          <Text style={styles.locationAddress}>
-            {locationTo?.LocationAddress || "No address"}
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.title}>Activity Details</Text>
+          <Text style={styles.subtitle}>
+            {activity.ActivityName ||
+              activity.ActivityLabel ||
+              "Unnamed Activity"}
           </Text>
         </View>
-      )}
+      </View>
 
-      <ButtonTray>
-        {renderStatusButtons()}
-        <Button
-          label="View Map"
-          icon={<Ionicons name="map-outline" size={16} color="white" />}
-          styleButton={{ backgroundColor: "dodgerblue" }}
-          onClick={goToMapScreen}
+      <ScrollView style={styles.contentContainer}>
+        <ActivityView
+          activity={activity}
+          onDelete={onDelete}
+          onModify={goToModifyScreen}
         />
-      </ButtonTray>
+
+        {isLoadingLocations ? (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Loading location details...</Text>
+          </View>
+        ) : (
+          <View style={styles.locationsContainer}>
+            <Text style={styles.locationTitle}>
+              From: {locationFrom?.LocationName || "N/A"}
+            </Text>
+            <Text style={styles.locationAddress}>
+              {locationFrom?.LocationAddress || "No address"}
+            </Text>
+
+            <Text style={styles.locationTitle}>
+              To: {locationTo?.LocationName || "N/A"}
+            </Text>
+            <Text style={styles.locationAddress}>
+              {locationTo?.LocationAddress || "No address"}
+            </Text>
+          </View>
+        )}
+
+        <View style={styles.statusContainer}>
+          <Text style={styles.statusTitle}>Activity Status</Text>
+          <ButtonTray>{renderStatusButtons()}</ButtonTray>
+
+          <Button
+            label="View Map"
+            icon={<Ionicons name="map-outline" size={16} color="white" />}
+            styleButton={styles.mapButton}
+            onClick={goToMapScreen}
+          />
+        </View>
+      </ScrollView>
     </Screen>
   );
 };
 
 const styles = StyleSheet.create({
+  screen: {
+    backgroundColor: "#f8f9fa",
+    flex: 1,
+  },
+  header: {
+    paddingTop: 20,
+    paddingBottom: 15,
+    paddingHorizontal: 20,
+    backgroundColor: "white",
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  logo: {
+    width: 120,
+    height: 60,
+  },
+  headerTextContainer: {
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#122f76",
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "gray",
+    marginTop: 5,
+    textAlign: "center",
+  },
+  contentContainer: {
+    padding: 20,
+  },
   loadingContainer: {
     padding: 15,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "white",
     borderRadius: 8,
     marginVertical: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   loadingText: {
     textAlign: "center",
@@ -213,19 +283,46 @@ const styles = StyleSheet.create({
   },
   locationsContainer: {
     padding: 15,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "white",
     borderRadius: 8,
     marginVertical: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   locationTitle: {
     fontWeight: "bold",
     fontSize: 16,
     marginTop: 8,
     marginBottom: 4,
+    color: "#122f76",
   },
   locationAddress: {
     color: "#6c757d",
     marginBottom: 8,
+  },
+  statusContainer: {
+    padding: 15,
+    backgroundColor: "white",
+    borderRadius: 8,
+    marginVertical: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  statusTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#122f76",
+    marginBottom: 12,
+  },
+  mapButton: {
+    backgroundColor: "#122f76",
+    marginTop: 15,
   },
 });
 

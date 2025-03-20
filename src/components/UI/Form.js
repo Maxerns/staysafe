@@ -16,29 +16,61 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { TouchableOpacity } from "react-native";
 
-const Form = ({ children, onSubmit, onCancel, submitLabel, submitIcon }) => {
+const Form = ({
+  children,
+  onSubmit,
+  onCancel,
+  submitLabel,
+  submitIcon,
+  buttonStyle,
+  buttonTextStyle,
+  cancelButtonStyle,
+  cancelTextStyle,
+  showCancelButton = true,
+}) => {
   return (
     <KeyboardAvoidingView style={styles.formContainer}>
       <ScrollView contentContainerStyle={styles.formItems}>
         {children}
       </ScrollView>
-      <ButtonTray>
-        <Button label={submitLabel} icon={submitIcon} onClick={onSubmit} />
-        <Button label="Cancel" icon={<Icons.Close />} onClick={onCancel} />
+      <ButtonTray style={!showCancelButton && styles.centerButtonTray}>
+        <Button
+          label={submitLabel}
+          icon={submitIcon}
+          onClick={onSubmit}
+          styleButton={[
+            !showCancelButton && styles.fullWidthButton,
+            buttonStyle,
+          ]}
+          styleLabel={buttonTextStyle}
+        />
+        {showCancelButton && (
+          <Button
+            label="Cancel"
+            icon={<Icons.Close />}
+            onClick={onCancel}
+            styleButton={cancelButtonStyle || styles.cancelButton}
+            styleLabel={cancelTextStyle || styles.cancelButtonText}
+          />
+        )}
       </ButtonTray>
     </KeyboardAvoidingView>
   );
 };
 
-const InputText = ({ label, value, onChange }) => {
+const InputText = ({ label, value, onChange, icon, style }) => {
   return (
-    <View style={styles.item}>
+    <View style={[styles.item, style]}>
       <Text style={styles.itemLabel}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChange}
-        style={styles.itemInput}
-      />
+      <View style={styles.inputContainer}>
+        {icon && <View style={styles.iconContainer}>{icon}</View>}
+        <TextInput
+          value={value}
+          onChangeText={onChange}
+          style={[styles.itemInput, icon && styles.inputWithIcon]}
+          placeholderTextColor="#999"
+        />
+      </View>
     </View>
   );
 };
@@ -77,16 +109,28 @@ const InputSelect = ({
   );
 };
 
-const InputPassword = ({ label, value, onChange }) => {
+const InputPassword = ({ label, value, onChange, icon, style }) => {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
-    <View style={styles.item}>
+    <View style={[styles.item, style]}>
       <Text style={styles.itemLabel}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChange}
-        style={styles.itemInput}
-        secureTextEntry={true}
-      />
+      <View style={styles.inputContainer}>
+        {icon && <View style={styles.iconContainer}>{icon}</View>}
+        <TextInput
+          value={value}
+          onChangeText={onChange}
+          style={[styles.itemInput, icon && styles.inputWithIcon]}
+          secureTextEntry={!showPassword}
+          placeholderTextColor="#999"
+        />
+        <TouchableOpacity
+          style={styles.passwordToggle}
+          onPress={() => setShowPassword(!showPassword)}
+        >
+          {showPassword ? <Icons.EyeOff /> : <Icons.Eye />}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -178,13 +222,14 @@ Form.InputDate = InputDate;
 
 const styles = StyleSheet.create({
   formItems: {
-    gap: 5,
+    gap: 15,
   },
   formContainer: {
-    gap: 10,
+    gap: 25,
   },
   item: {
     flex: 1,
+    marginBottom: 10,
   },
   itemCheckbox: {
     flexDirection: "row",
@@ -192,9 +237,25 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   itemLabel: {
-    color: "grey",
+    color: "#555",
     fontSize: 16,
-    marginBottom: 5,
+    marginBottom: 8,
+    fontWeight: "500",
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 7,
+    borderColor: "#ccc",
+    backgroundColor: "white",
+    overflow: "hidden",
+  },
+  iconContainer: {
+    paddingHorizontal: 10,
+  },
+  passwordToggle: {
+    padding: 10,
   },
   itemLoading: {
     height: 50,
@@ -211,10 +272,10 @@ const styles = StyleSheet.create({
     height: 50,
     paddingLeft: 10,
     fontSize: 16,
-    backgroundColor: "white",
-    borderRadius: 7,
-    borderWidth: 1,
-    borderColor: "lightgrey",
+    flex: 1,
+  },
+  inputWithIcon: {
+    paddingLeft: 0,
   },
   selectListBoxStyle: {
     height: 50,
@@ -227,6 +288,19 @@ const styles = StyleSheet.create({
   },
   selectListDropdownStyle: {
     borderColor: "lightgrey",
+  },
+  cancelButton: {
+    backgroundColor: "#f2f2f2",
+    borderColor: "#ddd",
+  },
+  cancelButtonText: {
+    color: "#555",
+  },
+  centerButtonTray: {
+    justifyContent: "center",
+  },
+  fullWidthButton: {
+    maxWidth: 250,
   },
 });
 
