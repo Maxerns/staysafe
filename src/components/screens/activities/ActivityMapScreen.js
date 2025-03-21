@@ -18,6 +18,7 @@ import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
 import { Button } from "../../UI/Button";
 import { useContacts } from "../../context/contactContext";
+import { useTheme } from "../../context/themeContext";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CARD_WIDTH = SCREEN_WIDTH * 0.8;
@@ -27,6 +28,7 @@ const ActivityMapScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
   const { isViewMode, activityStatus, userId } = route.params || {};
   const { getContactLiveLocation } = useContacts();
+  const { theme, isDarkMode } = useTheme();
 
   const mapRef = useRef(null);
   const scrollViewRef = useRef(null);
@@ -324,27 +326,40 @@ const ActivityMapScreen = ({ navigation, route }) => {
     if (!point) {
       // Render empty card with instructions
       return (
-        <View style={[styles.card, styles.emptyCard]}>
+        <View
+          style={[
+            styles.card,
+            styles.emptyCard,
+            { backgroundColor: theme.card },
+          ]}
+        >
           <View style={styles.cardHeader}>
             <View
               style={[
                 styles.pointBadge,
-                { backgroundColor: pointIndex === 0 ? "#2196F3" : "#4CAF50" },
+                {
+                  backgroundColor:
+                    pointIndex === 0 ? theme.info : theme.success,
+                },
               ]}
             >
               <Text style={styles.pointBadgeText}>
                 {pointIndex === 0 ? "From" : "To"}
               </Text>
             </View>
-            <Text style={styles.cardTitle}>
+            <Text style={[styles.cardTitle, { color: theme.text }]}>
               {isViewMode
                 ? "Location not available"
                 : `Tap on map to set Point ${pointIndex === 0 ? "From" : "To"}`}
             </Text>
           </View>
           <View style={styles.emptyCardContent}>
-            <Ionicons name="location-outline" size={32} color="#BDBDBD" />
-            <Text style={styles.emptyCardText}>
+            <Ionicons
+              name="location-outline"
+              size={32}
+              color={isDarkMode ? "#555" : "#BDBDBD"}
+            />
+            <Text style={[styles.emptyCardText, { color: theme.text }]}>
               {isViewMode
                 ? "Location data could not be loaded"
                 : "Select a location on the map"}
@@ -357,15 +372,21 @@ const ActivityMapScreen = ({ navigation, route }) => {
     const isPointA = pointIndex === 0;
     const isLivePoint = pointIndex === 2;
     const cardColor = isLivePoint
-      ? "#FFEBEE"
+      ? isDarkMode
+        ? "#331111"
+        : "#FFEBEE"
       : isPointA
-      ? "#E3F2FD"
+      ? isDarkMode
+        ? "#102236"
+        : "#E3F2FD"
+      : isDarkMode
+      ? "#0F2415"
       : "#E8F5E9";
     const badgeColor = isLivePoint
-      ? "#F44336"
+      ? theme.error
       : isPointA
-      ? "#2196F3"
-      : "#4CAF50";
+      ? theme.info
+      : theme.success;
     const pointLabel = isLivePoint ? "Live" : pointIndex === 0 ? "From" : "To";
 
     return (
@@ -374,7 +395,10 @@ const ActivityMapScreen = ({ navigation, route }) => {
           <View style={[styles.pointBadge, { backgroundColor: badgeColor }]}>
             <Text style={styles.pointBadgeText}>{pointLabel}</Text>
           </View>
-          <Text style={styles.cardTitle} numberOfLines={1}>
+          <Text
+            style={[styles.cardTitle, { color: theme.text }]}
+            numberOfLines={1}
+          >
             {point.LocationName || `Point ${pointLabel}`}
           </Text>
           {!isViewMode && !isLivePoint && (
@@ -382,22 +406,35 @@ const ActivityMapScreen = ({ navigation, route }) => {
               style={styles.iconButton}
               onPress={() => removePoint(pointIndex)}
             >
-              <Ionicons name="trash-outline" size={20} color="#F44336" />
+              <Ionicons name="trash-outline" size={20} color={theme.error} />
             </TouchableOpacity>
           )}
         </View>
 
         <View style={styles.addressContainer}>
-          <Ionicons name="location-outline" size={16} color="#757575" />
-          <Text style={styles.addressText} numberOfLines={2}>
+          <Ionicons
+            name="location-outline"
+            size={16}
+            color={isDarkMode ? "#aaa" : "#757575"}
+          />
+          <Text
+            style={[styles.addressText, { color: theme.text }]}
+            numberOfLines={2}
+          >
             {point.LocationAddress || "Address not available"}
           </Text>
         </View>
 
         {point.LocationPostcode ? (
           <View style={styles.postcodeContainer}>
-            <Ionicons name="mail-outline" size={16} color="#757575" />
-            <Text style={styles.postcodeText}>{point.LocationPostcode}</Text>
+            <Ionicons
+              name="mail-outline"
+              size={16}
+              color={isDarkMode ? "#aaa" : "#757575"}
+            />
+            <Text style={[styles.postcodeText, { color: theme.text }]}>
+              {point.LocationPostcode}
+            </Text>
           </View>
         ) : null}
 
@@ -406,9 +443,9 @@ const ActivityMapScreen = ({ navigation, route }) => {
             <Ionicons
               name="information-circle-outline"
               size={16}
-              color="#757575"
+              color={isDarkMode ? "#aaa" : "#757575"}
             />
-            <Text style={styles.descriptionText}>
+            <Text style={[styles.descriptionText, { color: theme.text }]}>
               {point.LocationDescription}
             </Text>
           </View>
@@ -417,9 +454,16 @@ const ActivityMapScreen = ({ navigation, route }) => {
         {!isViewMode && !isLivePoint && (
           <View style={styles.inputContainer}>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.inputBackground,
+                  color: theme.text,
+                  borderColor: theme.border,
+                },
+              ]}
               placeholder="Title"
-              placeholderTextColor="#9E9E9E"
+              placeholderTextColor={isDarkMode ? "#777" : "#9E9E9E"}
               value={point.LocationName}
               onChangeText={(text) => {
                 const newLocations = [...locationRef.current];
@@ -433,9 +477,17 @@ const ActivityMapScreen = ({ navigation, route }) => {
             />
 
             <TextInput
-              style={[styles.input, styles.descriptionInput]}
+              style={[
+                styles.input,
+                styles.descriptionInput,
+                {
+                  backgroundColor: theme.inputBackground,
+                  color: theme.text,
+                  borderColor: theme.border,
+                },
+              ]}
               placeholder="Description"
-              placeholderTextColor="#9E9E9E"
+              placeholderTextColor={isDarkMode ? "#777" : "#9E9E9E"}
               multiline
               numberOfLines={2}
               value={point.LocationDescription}
@@ -454,21 +506,45 @@ const ActivityMapScreen = ({ navigation, route }) => {
 
         <View style={styles.cardActions}>
           <TouchableOpacity
-            style={[styles.actionButton, styles.focusButton]}
+            style={[
+              styles.actionButton,
+              styles.focusButton,
+              { backgroundColor: isDarkMode ? "#455A64" : "#607D8B" },
+            ]}
             onPress={() => focusMapOnPoint(point)}
           >
-            <Ionicons name="locate-outline" size={16} color="#FFFFFF" />
-            <Text style={styles.actionButtonText}>Focus</Text>
+            <Ionicons
+              name="locate-outline"
+              size={16}
+              color={theme.buttonText}
+            />
+            <Text
+              style={[styles.actionButtonText, { color: theme.buttonText }]}
+            >
+              Focus
+            </Text>
           </TouchableOpacity>
           {!isViewMode && !isLivePoint && (
             <TouchableOpacity
-              style={[styles.actionButton, styles.editButton]}
+              style={[
+                styles.actionButton,
+                styles.editButton,
+                { backgroundColor: theme.info },
+              ]}
               onPress={() => {
                 setActivePoint(pointIndex);
               }}
             >
-              <Ionicons name="create-outline" size={16} color="#FFFFFF" />
-              <Text style={styles.actionButtonText}>Edit</Text>
+              <Ionicons
+                name="create-outline"
+                size={16}
+                color={theme.buttonText}
+              />
+              <Text
+                style={[styles.actionButtonText, { color: theme.buttonText }]}
+              >
+                Edit
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -485,8 +561,10 @@ const ActivityMapScreen = ({ navigation, route }) => {
     locationRef.current[1].LocationDescription;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+    >
+      <View style={[styles.header, { backgroundColor: theme.card }]}>
         <View style={styles.logoContainer}>
           <Image
             source={require("../../../../assets/StaySafeVector.png")}
@@ -496,10 +574,10 @@ const ActivityMapScreen = ({ navigation, route }) => {
         </View>
 
         <View style={styles.headerTextContainer}>
-          <Text style={styles.title}>
+          <Text style={[styles.title, { color: theme.primary }]}>
             {isViewMode ? "Activity Map" : "Select Locations"}
           </Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: theme.text }]}>
             {isViewMode
               ? "Track your journey location"
               : "Tap on the map to set points"}
@@ -513,6 +591,7 @@ const ActivityMapScreen = ({ navigation, route }) => {
           style={styles.map}
           region={mapRegion}
           onPress={handleMapPress}
+          userInterfaceStyle={isDarkMode ? "dark" : "light"}
         >
           {locations.map((location, index) =>
             location ? (
@@ -547,17 +626,25 @@ const ActivityMapScreen = ({ navigation, route }) => {
           <View style={styles.liveLocationStatus}>
             {isLiveLocationLoading ? (
               <View style={styles.liveStatusContent}>
-                <ActivityIndicator size="small" color="#FFFFFF" />
+                <ActivityIndicator size="small" color={theme.buttonText} />
                 <Text style={styles.liveStatusText}>Updating location...</Text>
               </View>
             ) : liveLocationError ? (
               <View style={styles.liveStatusContent}>
-                <Ionicons name="alert-circle" size={16} color="#FFFFFF" />
+                <Ionicons
+                  name="alert-circle"
+                  size={16}
+                  color={theme.buttonText}
+                />
                 <Text style={styles.liveStatusText}>{liveLocationError}</Text>
               </View>
             ) : locations[2] ? (
               <View style={styles.liveStatusContent}>
-                <Ionicons name="checkmark-circle" size={16} color="#FFFFFF" />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={16}
+                  color={theme.buttonText}
+                />
                 <Text style={styles.liveStatusText}>Live tracking active</Text>
               </View>
             ) : null}
@@ -583,18 +670,30 @@ const ActivityMapScreen = ({ navigation, route }) => {
             <View
               style={[
                 styles.paginationDot,
-                { backgroundColor: locations[0] ? "#2196F3" : "#BDBDBD" },
+                {
+                  backgroundColor: locations[0]
+                    ? theme.info
+                    : isDarkMode
+                    ? "#444"
+                    : "#BDBDBD",
+                },
               ]}
             />
             <View
               style={[
                 styles.paginationDot,
-                { backgroundColor: locations[1] ? "#4CAF50" : "#BDBDBD" },
+                {
+                  backgroundColor: locations[1]
+                    ? theme.success
+                    : isDarkMode
+                    ? "#444"
+                    : "#BDBDBD",
+                },
               ]}
             />
             {locations[2] && (
               <View
-                style={[styles.paginationDot, { backgroundColor: "#F44336" }]}
+                style={[styles.paginationDot, { backgroundColor: theme.error }]}
               />
             )}
           </View>
@@ -604,8 +703,11 @@ const ActivityMapScreen = ({ navigation, route }) => {
           <View style={styles.saveButtonContainer}>
             <Button
               label="Save Locations"
-              styleButton={styles.saveButton}
-              styleLabel={styles.saveButtonText}
+              styleButton={[
+                styles.saveButton,
+                { backgroundColor: theme.primary },
+              ]}
+              styleLabel={[styles.saveButtonText, { color: theme.buttonText }]}
               onClick={handleSave}
             />
           </View>
@@ -613,11 +715,15 @@ const ActivityMapScreen = ({ navigation, route }) => {
 
         {isViewMode && !isLiveLocationFetched && activityStatus === 2 && (
           <TouchableOpacity
-            style={styles.refreshButton}
+            style={[styles.refreshButton, { backgroundColor: theme.primary }]}
             onPress={fetchLiveLocation}
           >
-            <Ionicons name="refresh" size={24} color="#FFFFFF" />
-            <Text style={styles.refreshButtonText}>Refresh Live Location</Text>
+            <Ionicons name="refresh" size={24} color={theme.buttonText} />
+            <Text
+              style={[styles.refreshButtonText, { color: theme.buttonText }]}
+            >
+              Refresh Live Location
+            </Text>
           </TouchableOpacity>
         )}
       </View>
@@ -628,13 +734,11 @@ const ActivityMapScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
   },
   header: {
     paddingTop: 20,
     paddingBottom: 15,
     paddingHorizontal: 20,
-    backgroundColor: "white",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     shadowColor: "#000",
@@ -658,11 +762,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#122f76",
   },
   subtitle: {
     fontSize: 16,
-    color: "gray",
     marginTop: 5,
     textAlign: "center",
   },
@@ -688,7 +790,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginHorizontal: CARD_SPACING / 2,
-    backgroundColor: "#FFFFFF",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -696,7 +797,6 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   emptyCard: {
-    backgroundColor: "#FFFFFF",
     justifyContent: "center",
     alignItems: "center",
     height: 200,
@@ -708,7 +808,6 @@ const styles = StyleSheet.create({
   },
   emptyCardText: {
     marginTop: 10,
-    color: "#757575",
     textAlign: "center",
   },
   cardHeader: {
@@ -733,7 +832,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: "bold",
-    color: "#212121",
   },
   iconButton: {
     padding: 4,
@@ -746,7 +844,6 @@ const styles = StyleSheet.create({
   addressText: {
     flex: 1,
     fontSize: 14,
-    color: "#424242",
     marginLeft: 8,
   },
   postcodeContainer: {
@@ -756,7 +853,6 @@ const styles = StyleSheet.create({
   },
   postcodeText: {
     fontSize: 14,
-    color: "#424242",
     marginLeft: 8,
   },
   descriptionContainer: {
@@ -767,7 +863,6 @@ const styles = StyleSheet.create({
   descriptionText: {
     flex: 1,
     fontSize: 14,
-    color: "#424242",
     marginLeft: 8,
     fontStyle: "italic",
   },
@@ -775,14 +870,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   input: {
-    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#E0E0E0",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
-    color: "#212121",
     marginBottom: 8,
   },
   descriptionInput: {
@@ -808,7 +900,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#2196F3",
   },
   actionButtonText: {
-    color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "500",
     marginLeft: 4,
@@ -832,12 +923,10 @@ const styles = StyleSheet.create({
     right: 20,
   },
   saveButton: {
-    backgroundColor: "#122f76",
     paddingVertical: 14,
     borderRadius: 10,
   },
   saveButtonText: {
-    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -880,7 +969,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 20,
     alignSelf: "center",
-    backgroundColor: "#122f76",
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 10,
@@ -888,7 +976,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
   refreshButtonText: {
-    color: "#FFFFFF",
     marginLeft: 8,
     fontWeight: "bold",
   },

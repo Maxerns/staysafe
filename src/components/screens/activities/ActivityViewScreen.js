@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { Button, ButtonTray } from "../../UI/Button";
 import { Alert, Text, StyleSheet, View, Image, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../context/themeContext";
 
 const ActivityViewScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
@@ -15,6 +16,8 @@ const ActivityViewScreen = ({ navigation, route }) => {
     updateActivity,
     loadLocation,
   } = useActivities();
+  const { theme, isDarkMode } = useTheme();
+
   // State -------------------------------------------
   const [trackingInterval, setTrackingInterval] = useState(null);
   const [locationFrom, setLocationFrom] = useState(null);
@@ -59,10 +62,10 @@ const ActivityViewScreen = ({ navigation, route }) => {
 
   const renderStatusButtons = () => {
     const statusActions = [
-      { id: 2, label: "Start", color: "green" },
-      { id: 3, label: "Pause", color: "orange" },
-      { id: 4, label: "Cancel", color: "red" },
-      { id: 5, label: "Complete", color: "blue" },
+      { id: 2, label: "Start", color: theme.success },
+      { id: 3, label: "Pause", color: theme.warning },
+      { id: 4, label: "Cancel", color: theme.error },
+      { id: 5, label: "Complete", color: theme.info },
     ];
 
     return statusActions.map((action) => (
@@ -72,11 +75,23 @@ const ActivityViewScreen = ({ navigation, route }) => {
         styleButton={{
           backgroundColor:
             action.id === activity.ActivityStatusID
-              ? "lightgrey"
+              ? isDarkMode
+                ? "#333333"
+                : "#e0e0e0"
               : action.color,
+          paddingHorizontal: 8,
+          paddingVertical: 6,
+          minWidth: 70,
+          margin: 2,
         }}
         styleLabel={{
-          color: action.id === activity.ActivityStatusID ? "darkgrey" : "white",
+          color:
+            action.id === activity.ActivityStatusID
+              ? isDarkMode
+                ? "#999999"
+                : "#777777"
+              : theme.buttonText,
+          fontSize: 11,
         }}
         onClick={() => handleStatusChange(action.id)}
         disabled={action.id === activity.ActivityStatusID}
@@ -98,7 +113,7 @@ const ActivityViewScreen = ({ navigation, route }) => {
     navigation.navigate("ActivityMapScreen", {
       locations: [locationFrom, locationTo],
       isViewMode: true,
-      activityStatus: activity.ActivityStatusID, // Fixed typo here (was ActvityStatusID)
+      activityStatus: activity.ActivityStatusID,
       userId: activity.ActivityUserID,
     });
   };
@@ -158,8 +173,8 @@ const ActivityViewScreen = ({ navigation, route }) => {
 
   // View --------------------------------------------
   return (
-    <Screen style={styles.screen}>
-      <View style={styles.header}>
+    <Screen style={[styles.screen, { backgroundColor: theme.background }]}>
+      <View style={[styles.header, { backgroundColor: theme.card }]}>
         <View style={styles.logoContainer}>
           <Image
             source={require("../../../../assets/StaySafeVector.png")}
@@ -169,8 +184,10 @@ const ActivityViewScreen = ({ navigation, route }) => {
         </View>
 
         <View style={styles.headerTextContainer}>
-          <Text style={styles.title}>Activity Details</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: theme.primary }]}>
+            Activity Details
+          </Text>
+          <Text style={[styles.subtitle, { color: theme.text }]}>
             {activity.ActivityName ||
               activity.ActivityLabel ||
               "Unnamed Activity"}
@@ -186,35 +203,47 @@ const ActivityViewScreen = ({ navigation, route }) => {
         />
 
         {isLoadingLocations ? (
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Loading location details...</Text>
+          <View
+            style={[styles.loadingContainer, { backgroundColor: theme.card }]}
+          >
+            <Text style={[styles.loadingText, { color: theme.text }]}>
+              Loading location details...
+            </Text>
           </View>
         ) : (
-          <View style={styles.locationsContainer}>
-            <Text style={styles.locationTitle}>
+          <View
+            style={[styles.locationsContainer, { backgroundColor: theme.card }]}
+          >
+            <Text style={[styles.locationTitle, { color: theme.primary }]}>
               From: {locationFrom?.LocationName || "N/A"}
             </Text>
-            <Text style={styles.locationAddress}>
+            <Text style={[styles.locationAddress, { color: theme.text }]}>
               {locationFrom?.LocationAddress || "No address"}
             </Text>
 
-            <Text style={styles.locationTitle}>
+            <Text style={[styles.locationTitle, { color: theme.primary }]}>
               To: {locationTo?.LocationName || "N/A"}
             </Text>
-            <Text style={styles.locationAddress}>
+            <Text style={[styles.locationAddress, { color: theme.text }]}>
               {locationTo?.LocationAddress || "No address"}
             </Text>
           </View>
         )}
 
-        <View style={styles.statusContainer}>
-          <Text style={styles.statusTitle}>Activity Status</Text>
-          <ButtonTray>{renderStatusButtons()}</ButtonTray>
+        <View style={[styles.statusContainer, { backgroundColor: theme.card }]}>
+          <Text style={[styles.statusTitle, { color: theme.primary }]}>
+            Activity Status
+          </Text>
+          <ButtonTray style={styles.buttonTray}>
+            {renderStatusButtons()}
+          </ButtonTray>
 
           <Button
             label="View Map"
-            icon={<Ionicons name="map-outline" size={16} color="white" />}
-            styleButton={styles.mapButton}
+            icon={
+              <Ionicons name="map-outline" size={16} color={theme.buttonText} />
+            }
+            styleButton={[styles.mapButton, { backgroundColor: theme.primary }]}
             onClick={goToMapScreen}
           />
         </View>
@@ -225,14 +254,12 @@ const ActivityViewScreen = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   screen: {
-    backgroundColor: "#f8f9fa",
     flex: 1,
   },
   header: {
     paddingTop: 20,
     paddingBottom: 15,
     paddingHorizontal: 20,
-    backgroundColor: "white",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     shadowColor: "#000",
@@ -255,11 +282,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#122f76",
   },
   subtitle: {
     fontSize: 16,
-    color: "gray",
     marginTop: 5,
     textAlign: "center",
   },
@@ -268,7 +293,6 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     padding: 15,
-    backgroundColor: "white",
     borderRadius: 8,
     marginVertical: 10,
     shadowColor: "#000",
@@ -279,11 +303,9 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     textAlign: "center",
-    color: "#6c757d",
   },
   locationsContainer: {
     padding: 15,
-    backgroundColor: "white",
     borderRadius: 8,
     marginVertical: 10,
     shadowColor: "#000",
@@ -297,15 +319,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 8,
     marginBottom: 4,
-    color: "#122f76",
   },
   locationAddress: {
-    color: "#6c757d",
     marginBottom: 8,
   },
   statusContainer: {
     padding: 15,
-    backgroundColor: "white",
     borderRadius: 8,
     marginVertical: 10,
     shadowColor: "#000",
@@ -317,11 +336,13 @@ const styles = StyleSheet.create({
   statusTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#122f76",
     marginBottom: 12,
   },
+  buttonTray: {
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+  },
   mapButton: {
-    backgroundColor: "#122f76",
     marginTop: 15,
   },
 });

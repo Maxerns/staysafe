@@ -7,6 +7,7 @@ import { useContacts } from "../../context/contactContext";
 import Screen from "../../layout/Screen.js";
 import { useContext } from "react";
 import { AuthContext } from "../../context/authContext.js";
+import { useTheme } from "../../context/themeContext";
 
 const ContactListScreen = ({ navigation }) => {
   // Initialisations ---------------------------------
@@ -20,6 +21,7 @@ const ContactListScreen = ({ navigation }) => {
     refreshContacts,
   } = useContacts();
   const { user } = useContext(AuthContext);
+  const { theme } = useTheme();
   // State -------------------------------------------
   // Handlers ----------------------------------------
 
@@ -81,21 +83,27 @@ const ContactListScreen = ({ navigation }) => {
 
   // View --------------------------------------------
   return (
-    <Screen style={styles.screen}>
+    <Screen style={[styles.screen, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Contacts</Text>
-        <Text style={styles.subtitle}>Manage your StaySafe contacts</Text>
+        <Text style={[styles.title, { color: theme.primary }]}>Contacts</Text>
+        <Text style={[styles.subtitle, { color: theme.inactive }]}>
+          Manage your StaySafe contacts
+        </Text>
       </View>
 
-      <View style={styles.contentContainer}>
+      <View style={[styles.contentContainer, { backgroundColor: theme.card }]}>
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#122f76" />
-            <Text style={styles.loadingText}>Loading contacts...</Text>
+            <ActivityIndicator size="large" color={theme.primary} />
+            <Text style={[styles.loadingText, { color: theme.text }]}>
+              Loading contacts...
+            </Text>
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>Error: {error}</Text>
+            <Text style={[styles.errorText, { color: theme.error }]}>
+              Error: {error}
+            </Text>
             <Button
               label="Retry"
               onClick={refreshContacts}
@@ -105,7 +113,9 @@ const ContactListScreen = ({ navigation }) => {
           </View>
         ) : contacts.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No contacts found</Text>
+            <Text style={[styles.emptyText, { color: theme.text }]}>
+              No contacts found
+            </Text>
           </View>
         ) : (
           <View style={styles.listContainer}>
@@ -119,7 +129,10 @@ const ContactListScreen = ({ navigation }) => {
           label="Add New Contact"
           icon={<Icons.Add />}
           onClick={goToAddScreen}
-          styleButton={styles.addButton}
+          styleButton={[
+            styles.addButton,
+            { backgroundColor: theme.primary, borderColor: theme.primary },
+          ]}
           styleLabel={styles.addButtonText}
         />
       </ButtonTray>
@@ -129,7 +142,6 @@ const ContactListScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   screen: {
-    backgroundColor: "#f8f9fa",
     padding: 20,
   },
   header: {
@@ -139,15 +151,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#122f76",
   },
   subtitle: {
     fontSize: 16,
-    color: "gray",
     marginTop: 5,
   },
   contentContainer: {
-    backgroundColor: "white",
     borderRadius: 10,
     padding: 15,
     shadowColor: "#000",
@@ -167,7 +176,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     textAlign: "center",
-    color: "#555",
   },
   errorContainer: {
     flex: 1,
@@ -176,7 +184,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: "#ff3b3b",
     fontSize: 16,
     textAlign: "center",
     marginBottom: 20,
@@ -191,7 +198,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 20,
     textAlign: "center",
-    color: "#555",
   },
   listContainer: {
     flex: 1,
@@ -199,10 +205,6 @@ const styles = StyleSheet.create({
   buttonTray: {
     marginTop: 20,
     justifyContent: "center",
-  },
-  addButton: {
-    backgroundColor: "#122f76",
-    borderColor: "#122f76",
   },
   addButtonText: {
     color: "white",

@@ -9,10 +9,12 @@ import {
 import Screen from "../../layout/Screen";
 import ContactForm from "../../entity/contacts/ContactForm";
 import intialUsers from "../../../data/users.js";
+import { useTheme } from "../../context/themeContext";
 
 const ContactModifyScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
   const { contact, onModify } = route.params;
+  const { theme } = useTheme();
   // State -------------------------------------------
   // Handlers ----------------------------------------
   const foundUser = intialUsers.find(
@@ -34,17 +36,19 @@ const ContactModifyScreen = ({ navigation, route }) => {
 
   // View --------------------------------------------
   return (
-    <Screen style={styles.screen}>
+    <Screen style={[styles.screen, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <SafeAreaView style={styles.container}>
           <View style={styles.header}>
-            <Text style={styles.title}>Edit Contact</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: theme.primary }]}>
+              Edit Contact
+            </Text>
+            <Text style={[styles.subtitle, { color: theme.inactive }]}>
               Update information for {contact.ContactLabel}
             </Text>
           </View>
 
-          <View style={styles.formWrapper}>
+          <View style={[styles.formWrapper, { backgroundColor: theme.card }]}>
             <ContactForm
               initialContact={contact}
               initialContactUsername={initialContactUsername}
@@ -59,9 +63,6 @@ const ContactModifyScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  screen: {
-    backgroundColor: "#f8f9fa",
-  },
   scrollContent: {
     flexGrow: 1,
   },
@@ -76,15 +77,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#122f76",
   },
   subtitle: {
     fontSize: 16,
-    color: "gray",
     marginTop: 5,
   },
   formWrapper: {
-    backgroundColor: "white",
     borderRadius: 10,
     padding: 20,
     shadowColor: "#000",
