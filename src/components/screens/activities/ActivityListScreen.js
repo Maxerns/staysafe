@@ -142,17 +142,17 @@ const ActivityListScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   screen: {
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "colors.background",
     flex: 1,
   },
   header: {
     paddingTop: 20,
     paddingBottom: 15,
     paddingHorizontal: 20,
-    backgroundColor: "white",
+    backgroundColor: "colors.card",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    shadowColor: "#000",
+    shadowColor: "colors.shadow",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -172,31 +172,31 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#122f76",
+    color: "colors.primary",
   },
   subtitle: {
     fontSize: 16,
-    color: "gray",
+    color: "colors.text",
     marginTop: 5,
   },
   addButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#122f76",
+    backgroundColor: "colors.primary",
     marginHorizontal: 20,
     marginTop: 20,
     marginBottom: 10,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 10,
-    shadowColor: "#000",
+    shadowColor: "colors.shadow",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
   },
   addButtonText: {
-    color: "white",
+    color: "colors.white",
     fontWeight: "bold",
     fontSize: 16,
     marginLeft: 8,
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 20,
     fontSize: 16,
-    color: "#777",
+    color: "colors.text",
   },
   listContainer: {
     flex: 1,

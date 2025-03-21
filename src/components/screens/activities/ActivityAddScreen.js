@@ -5,12 +5,15 @@ import Screen from "../../layout/Screen";
 import { useActivities } from "../../context/activityContext";
 import { useContext } from "react";
 import { AuthContext } from "../../context/authContext";
+import { useTheme } from "../../context/themeContext";
 
 const ActivityAddScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
   const { onAdd } = route.params;
   const { createLocation } = useActivities();
   const { user } = useContext(AuthContext);
+  const { theme } = useTheme();
+
   // State -------------------------------------------
   // Handlers ----------------------------------------
   const handleFormSubmit = async (data) => {
@@ -44,8 +47,8 @@ const ActivityAddScreen = ({ navigation, route }) => {
 
   // View --------------------------------------------
   return (
-    <Screen style={styles.screen}>
-      <View style={styles.header}>
+    <Screen style={[styles.screen, { backgroundColor: theme.background }]}>
+      <View style={[styles.header, { backgroundColor: theme.card }]}>
         <View style={styles.logoContainer}>
           <Image
             source={require("../../../../assets/StaySafeVector.png")}
@@ -55,13 +58,17 @@ const ActivityAddScreen = ({ navigation, route }) => {
         </View>
 
         <View style={styles.headerTextContainer}>
-          <Text style={styles.title}>Create Activity</Text>
-          <Text style={styles.subtitle}>Plan your journey safely</Text>
+          <Text style={[styles.title, { color: theme.primary }]}>
+            Create Activity
+          </Text>
+          <Text style={[styles.subtitle, { color: theme.text }]}>
+            Plan your journey safely
+          </Text>
         </View>
       </View>
 
       <ScrollView style={styles.contentContainer}>
-        <View style={styles.formContainer}>
+        <View style={[styles.formContainer, { backgroundColor: theme.card }]}>
           <ActivityForm
             onSubmit={handleFormSubmit}
             onCancel={() => navigation.goBack()}
@@ -75,14 +82,12 @@ const ActivityAddScreen = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   screen: {
-    backgroundColor: "#f8f9fa",
     flex: 1,
   },
   header: {
     paddingTop: 20,
     paddingBottom: 15,
     paddingHorizontal: 20,
-    backgroundColor: "white",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     shadowColor: "#000",
@@ -105,18 +110,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#122f76",
   },
   subtitle: {
     fontSize: 16,
-    color: "gray",
     marginTop: 5,
   },
   contentContainer: {
     padding: 20,
   },
   formContainer: {
-    backgroundColor: "white",
     borderRadius: 12,
     padding: 20,
     shadowColor: "#000",

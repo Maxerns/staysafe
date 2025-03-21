@@ -2,37 +2,43 @@ import { StyleSheet, Text, View, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useContext } from "react";
 import { AuthContext } from "../../context/authContext";
+import { useTheme } from "../../context/themeContext";
 
 const ActivityItem = ({ activity, onSelect }) => {
   // Initialisations ---------------------------------
   const { user } = useContext(AuthContext);
+  const { theme } = useTheme();
   const isOwner = activity.ActivityUserID === user.info.id;
 
   // Get status information
   const getStatusInfo = () => {
     switch (activity.ActivityStatusID) {
       case 1:
-        return { text: "Planned", color: "#9E9E9E", icon: "calendar-outline" };
+        return {
+          text: "Planned",
+          color: theme.inactive,
+          icon: "calendar-outline",
+        };
       case 2:
-        return { text: "In Progress", color: "#2196F3", icon: "walk-outline" };
+        return { text: "In Progress", color: theme.info, icon: "walk-outline" };
       case 3:
-        return { text: "Paused", color: "#FF9800", icon: "pause-outline" };
+        return { text: "Paused", color: theme.warning, icon: "pause-outline" };
       case 4:
         return {
           text: "Cancelled",
-          color: "#F44336",
+          color: theme.error,
           icon: "close-circle-outline",
         };
       case 5:
         return {
           text: "Completed",
-          color: "#4CAF50",
+          color: theme.success,
           icon: "checkmark-circle-outline",
         };
       default:
         return {
           text: "Unknown",
-          color: "#9E9E9E",
+          color: theme.inactive,
           icon: "help-circle-outline",
         };
     }
@@ -55,30 +61,42 @@ const ActivityItem = ({ activity, onSelect }) => {
   return (
     <Pressable
       onPress={() => onSelect(activity)}
-      style={({ pressed }) => [styles.container, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.container,
+        { backgroundColor: theme.card },
+        pressed && styles.pressed,
+      ]}
     >
       <View style={styles.item}>
         <View style={styles.header}>
-          <Text style={styles.title} numberOfLines={1}>
+          <Text
+            style={[styles.title, { color: theme.primary }]}
+            numberOfLines={1}
+          >
             {activity.ActivityName ||
               activity.ActivityLabel ||
               "Unnamed Activity"}
           </Text>
           {isOwner && (
-            <View style={styles.ownerBadge}>
+            <View
+              style={[styles.ownerBadge, { backgroundColor: theme.primary }]}
+            >
               <Text style={styles.ownerText}>Owner</Text>
             </View>
           )}
         </View>
 
-        <Text style={styles.description} numberOfLines={2}>
+        <Text
+          style={[styles.description, { color: theme.text }]}
+          numberOfLines={2}
+        >
           {activity.ActivityDescription || "No description provided"}
         </Text>
 
         <View style={styles.details}>
           <View style={styles.dateContainer}>
-            <Ionicons name="time-outline" size={16} color="#757575" />
-            <Text style={styles.dateText}>
+            <Ionicons name="time-outline" size={16} color={theme.inactive} />
+            <Text style={[styles.dateText, { color: theme.inactive }]}>
               {formatDate(activity.ActivityLeave)} -{" "}
               {formatDate(activity.ActivityArrive)}
             </Text>
@@ -109,7 +127,6 @@ const styles = StyleSheet.create({
   container: {
     marginVertical: 8,
     marginHorizontal: 16,
-    backgroundColor: "white",
     borderRadius: 12,
     elevation: 2,
     shadowColor: "#000",
@@ -134,11 +151,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#122f76",
     flex: 1,
   },
   ownerBadge: {
-    backgroundColor: "#122f76",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -151,7 +166,6 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 14,
-    color: "#757575",
     marginBottom: 12,
   },
   details: {
@@ -166,7 +180,6 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 12,
-    color: "#757575",
     marginLeft: 4,
   },
   statusContainer: {

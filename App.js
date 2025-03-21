@@ -3,6 +3,7 @@ import StackNavigator from "./src/components/navigation/StackNavigator";
 import { AuthProvider } from "./src/components/context/authContext";
 import { ActivityProvider } from "./src/components/context/activityContext";
 import { ContactProvider } from "./src/components/context/contactContext";
+import { ThemeProvider } from "./src/components/context/themeContext";
 
 const App = () => {
   // Initialisations ---------------------------------
@@ -10,15 +11,17 @@ const App = () => {
   // Handlers ----------------------------------------
   // View --------------------------------------------
   return (
-    <AuthProvider>
-      <ContactProvider>
-        <ActivityProvider>
-          <NavigationContainer>
-            <StackNavigator />
-          </NavigationContainer>
-        </ActivityProvider>
-      </ContactProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <ContactProvider>
+          <ActivityProvider>
+            <NavigationContainer>
+              <StackNavigator />
+            </NavigationContainer>
+          </ActivityProvider>
+        </ContactProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

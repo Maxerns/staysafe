@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { View, StyleSheet, Text, Image } from "react-native";
+import { View, StyleSheet, Text, Image, Switch } from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import {
   DrawerContentScrollView,
@@ -9,25 +9,40 @@ import ActivityListScreen from "../screens/activities/ActivityListScreen";
 import ContactListScreen from "../screens/contacts/ContactListScreen";
 import { Button } from "../UI/Button";
 import { AuthContext } from "../context/authContext";
+import { ThemeContext, useTheme } from "../context/themeContext";
+import { Ionicons } from "@expo/vector-icons";
 
 const Drawer = createDrawerNavigator();
 
 // Custom drawer content component with sign out button
 const CustomDrawerContent = (props) => {
+  // Initialisations ---------------------------------
   const { signOut, user } = useContext(AuthContext);
-
+  const { theme, isDarkMode, toggleTheme } = useTheme();
+  // State -------------------------------------------
+  // Handlers ----------------------------------------
   const handleSignOut = () => {
     signOut();
   };
 
+  // View --------------------------------------------
   return (
-    <View style={styles.drawerContainer}>
+    <View
+      style={[
+        styles.drawerContainer,
+        { backgroundColor: theme.drawerBackground },
+      ]}
+    >
       <DrawerContentScrollView
         {...props}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Drawer Header with Logo and User Info */}
-        <View style={styles.drawerHeader}>
+        <View
+          style={[
+            styles.drawerHeader,
+            { backgroundColor: theme.drawerHeaderBackground },
+          ]}
+        >
           <Image
             source={require("../../../assets/StaySafeVector.png")}
             style={styles.logo}
@@ -39,24 +54,57 @@ const CustomDrawerContent = (props) => {
           </View>
         </View>
 
-        {/* Drawer Items Section */}
-        <View style={styles.drawerItemsContainer}>
-          <Text style={styles.sectionTitle}>NAVIGATION</Text>
+        <View
+          style={[styles.drawerItemsContainer, { backgroundColor: theme.card }]}
+        >
+          <Text style={[styles.sectionTitle, { color: theme.inactive }]}>
+            NAVIGATION
+          </Text>
           <DrawerItemList
             {...props}
-            labelStyle={styles.drawerItemLabel}
+            labelStyle={[styles.drawerItemLabel, { color: theme.text }]}
             itemStyle={styles.drawerItem}
           />
+
+          <View
+            style={[
+              styles.themeToggleContainer,
+              { borderTopColor: theme.border },
+            ]}
+          >
+            <Text style={[styles.themeToggleText, { color: theme.text }]}>
+              Dark Mode
+            </Text>
+            <View style={styles.themeIcons}>
+              <Ionicons
+                name="sunny"
+                size={20}
+                color={isDarkMode ? theme.inactive : theme.warning}
+              />
+              <Switch
+                value={isDarkMode}
+                onValueChange={toggleTheme}
+                trackColor={{ false: "#767577", true: "#81b0ff" }}
+                thumbColor={isDarkMode ? "#f5dd4b" : "#f4f3f4"}
+                ios_backgroundColor="#3e3e3e"
+                style={styles.themeSwitch}
+              />
+              <Ionicons
+                name="moon"
+                size={20}
+                color={isDarkMode ? theme.info : theme.inactive}
+              />
+            </View>
+          </View>
         </View>
       </DrawerContentScrollView>
 
-      {/* Sign Out Section */}
-      <View style={styles.signOutContainer}>
+      <View style={[styles.signOutContainer, { borderTopColor: theme.border }]}>
         <Button
           label="Sign Out"
           onClick={handleSignOut}
-          style={styles.signOutButton}
-          textStyle={styles.signOutButtonText}
+          styleButton={styles.signOutButton}
+          styleLabel={styles.signOutButtonText}
         />
       </View>
     </View>
@@ -64,19 +112,21 @@ const CustomDrawerContent = (props) => {
 };
 
 const DrawerNavigator = () => {
+  const { theme } = useTheme();
+
   return (
     <Drawer.Navigator
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
         headerStyle: {
-          backgroundColor: "#122f76",
+          backgroundColor: theme.headerBackground,
         },
-        headerTintColor: "white",
+        headerTintColor: theme.headerText,
         headerTitleStyle: {
           fontWeight: "bold",
         },
-        drawerActiveTintColor: "#122f76",
-        drawerInactiveTintColor: "#555",
+        drawerActiveTintColor: theme.primary,
+        drawerInactiveTintColor: theme.inactive,
         drawerLabelStyle: {
           marginLeft: 0,
           fontWeight: "500",
@@ -86,6 +136,12 @@ const DrawerNavigator = () => {
           borderRadius: 8,
           marginHorizontal: 10,
           marginVertical: 4,
+        },
+        drawerStyle: {
+          backgroundColor: theme.drawerBackground,
+        },
+        sceneContainerStyle: {
+          backgroundColor: theme.background,
         },
       }}
     >
@@ -106,13 +162,11 @@ const DrawerNavigator = () => {
 const styles = StyleSheet.create({
   drawerContainer: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
   },
   scrollContent: {
     paddingVertical: 0,
   },
   drawerHeader: {
-    backgroundColor: "#122f76",
     padding: 20,
     paddingBottom: 30,
     justifyContent: "center",
@@ -138,7 +192,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   drawerItemsContainer: {
-    backgroundColor: "white",
     marginTop: -20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -152,7 +205,6 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 12,
-    color: "gray",
     marginLeft: 20,
     marginBottom: 10,
     marginTop: 5,
@@ -164,12 +216,33 @@ const styles = StyleSheet.create({
   drawerItemLabel: {
     fontWeight: "500",
   },
+  themeToggleContainer: {
+    flexDirection: "column",
+    alignItems: "center",
+    paddingVertical: 15,
+    marginTop: 15,
+    marginHorizontal: 16,
+    borderTopWidth: 1,
+  },
+  themeToggleText: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginBottom: 10,
+  },
+  themeIcons: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "60%",
+  },
+  themeSwitch: {
+    marginHorizontal: 10,
+  },
   signOutContainer: {
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: "#eee",
-    marginTop: 30,
-    marginBottom: 30,
+    marginTop: 10,
+    marginBottom: 20,
   },
   signOutButton: {
     backgroundColor: "#ff3b3b",

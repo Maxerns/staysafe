@@ -5,12 +5,15 @@ import Screen from "../../layout/Screen";
 import { useActivities } from "../../context/activityContext";
 import { useContext } from "react";
 import { AuthContext } from "../../context/authContext";
+import { useTheme } from "../../context/themeContext";
 
 const ActivityModifyScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
   const { activity, onModify } = route.params;
   const { createLocation, loadLocation } = useActivities();
   const { user } = useContext(AuthContext);
+  const { theme } = useTheme();
+
   // State -------------------------------------------
   const [locations, setLocations] = useState([null, null]);
 
@@ -63,8 +66,8 @@ const ActivityModifyScreen = ({ navigation, route }) => {
 
   // View --------------------------------------------
   return (
-    <Screen style={styles.screen}>
-      <View style={styles.header}>
+    <Screen style={[styles.screen, { backgroundColor: theme.background }]}>
+      <View style={[styles.header, { backgroundColor: theme.card }]}>
         <View style={styles.logoContainer}>
           <Image
             source={require("../../../../assets/StaySafeVector.png")}
@@ -74,8 +77,10 @@ const ActivityModifyScreen = ({ navigation, route }) => {
         </View>
 
         <View style={styles.headerTextContainer}>
-          <Text style={styles.title}>Edit Activity</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: theme.primary }]}>
+            Edit Activity
+          </Text>
+          <Text style={[styles.subtitle, { color: theme.text }]}>
             {activity.ActivityName ||
               activity.ActivityLabel ||
               "Update journey details"}
@@ -84,7 +89,7 @@ const ActivityModifyScreen = ({ navigation, route }) => {
       </View>
 
       <ScrollView style={styles.contentContainer}>
-        <View style={styles.formContainer}>
+        <View style={[styles.formContainer, { backgroundColor: theme.card }]}>
           <ActivityForm
             originalActivity={activity}
             onSubmit={handleFormSubmit}
@@ -100,14 +105,12 @@ const ActivityModifyScreen = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   screen: {
-    backgroundColor: "#f8f9fa",
     flex: 1,
   },
   header: {
     paddingTop: 20,
     paddingBottom: 15,
     paddingHorizontal: 20,
-    backgroundColor: "white",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     shadowColor: "#000",
@@ -130,11 +133,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#122f76",
   },
   subtitle: {
     fontSize: 16,
-    color: "gray",
     marginTop: 5,
     textAlign: "center",
   },
@@ -142,7 +143,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   formContainer: {
-    backgroundColor: "white",
     borderRadius: 12,
     padding: 20,
     shadowColor: "#000",

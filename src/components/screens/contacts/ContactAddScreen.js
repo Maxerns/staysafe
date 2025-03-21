@@ -7,10 +7,12 @@ import {
 } from "react-native";
 import Screen from "../../layout/Screen";
 import ContactForm from "../../entity/contacts/ContactForm";
+import { useTheme } from "../../context/themeContext";
 
 const ContactAddScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
   const { onAdd } = route.params;
+  const { theme } = useTheme();
   // State -------------------------------------------
 
   // Handlers ----------------------------------------
@@ -18,15 +20,19 @@ const ContactAddScreen = ({ navigation, route }) => {
 
   // View --------------------------------------------
   return (
-    <Screen style={styles.screen}>
+    <Screen style={[styles.screen, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <KeyboardAvoidingView behavior="position" keyboardVerticalOffset={100}>
           <View style={styles.header}>
-            <Text style={styles.title}>Add Contact</Text>
-            <Text style={styles.subtitle}>Create a new StaySafe contact</Text>
+            <Text style={[styles.title, { color: theme.primary }]}>
+              Add Contact
+            </Text>
+            <Text style={[styles.subtitle, { color: theme.inactive }]}>
+              Create a new StaySafe contact
+            </Text>
           </View>
 
-          <View style={styles.formWrapper}>
+          <View style={[styles.formWrapper, { backgroundColor: theme.card }]}>
             <ContactForm onSave={onAdd} onCancel={handleCancel} />
           </View>
         </KeyboardAvoidingView>
@@ -37,7 +43,6 @@ const ContactAddScreen = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   screen: {
-    backgroundColor: "#f8f9fa",
     padding: 20,
   },
   scrollContent: {
@@ -50,15 +55,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#122f76",
   },
   subtitle: {
     fontSize: 16,
-    color: "gray",
     marginTop: 5,
   },
   formWrapper: {
-    backgroundColor: "white",
     borderRadius: 10,
     padding: 20,
     shadowColor: "#000",
