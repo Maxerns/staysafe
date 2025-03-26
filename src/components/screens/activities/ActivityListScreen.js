@@ -13,10 +13,12 @@ import ActivityList from "../../entity/activities/ActivityList";
 import Screen from "../../layout/Screen";
 import { useActivities } from "../../context/activityContext";
 import { AuthContext } from "../../context/authContext.js";
+import { useTheme } from "../../context/themeContext";
 
 const ActivityListScreen = ({ navigation }) => {
   // Initialisations ---------------------------------
   const { user } = useContext(AuthContext);
+  const { theme } = useTheme();
   const {
     activities,
     loading,
@@ -90,11 +92,6 @@ const ActivityListScreen = ({ navigation }) => {
         </View>
       </View>
 
-      <TouchableOpacity style={styles.addButton} onPress={goToAddScreen}>
-        <Ionicons name="add" size={24} color="white" />
-        <Text style={styles.addButtonText}>Create Activity</Text>
-      </TouchableOpacity>
-
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#122f76" />
@@ -136,6 +133,14 @@ const ActivityListScreen = ({ navigation }) => {
           )}
         </View>
       )}
+
+      {/* FAB Button */}
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: theme?.primary || "#122f76" }]}
+        onPress={goToAddScreen}
+      >
+        <Ionicons name="add" size={30} color="white" />
+      </TouchableOpacity>
     </Screen>
   );
 };
@@ -178,28 +183,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "colors.text",
     marginTop: 5,
-  },
-  addButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "colors.primary",
-    marginHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    shadowColor: "colors.shadow",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  addButtonText: {
-    color: "colors.white",
-    fontWeight: "bold",
-    fontSize: 16,
-    marginLeft: 8,
   },
   loadingContainer: {
     flex: 1,
@@ -285,6 +268,23 @@ const styles = StyleSheet.create({
   refreshIndicator: {
     alignItems: "center",
     paddingVertical: 15,
+  },
+  // FAB styles
+  fab: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    right: 20,
+    bottom: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 999,
   },
 });
 

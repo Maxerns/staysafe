@@ -143,6 +143,7 @@ const DrawerNavigator = () => {
         sceneContainerStyle: {
           backgroundColor: theme.background,
         },
+        headerRight: () => <Image source={require("../../../assets/StaySafeVector.png")} style={styles.miniLogo} />,
       }}
     >
       <Drawer.Screen
@@ -176,6 +177,12 @@ const styles = StyleSheet.create({
     width: 150,
     height: 75,
     tintColor: "white",
+  },
+  miniLogo: {
+    width: 35,
+    height: 35,
+    tintColor: "white",
+    marginRight: 10,
   },
   userInfoContainer: {
     marginTop: 15,

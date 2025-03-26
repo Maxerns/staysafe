@@ -13,15 +13,14 @@ import { useTheme } from "../context/themeContext";
 import ContactAddScreen from "../screens/contacts/ContactAddScreen";
 import ContactViewScreen from "../screens/contacts/ContactViewScreen";
 import ContactModifyScreen from "../screens/contacts/ContactModifyScreen";
+import { Image } from "react-native";
 
 const Stack = createNativeStackNavigator();
-
 
 const StackNavigator = () => {
   const { isSignedIn, isLoading } = useContext(AuthContext);
   const { theme } = useTheme();
 
-  
   const screenOptions = {
     headerStyle: {
       backgroundColor: theme.headerBackground,
@@ -42,6 +41,12 @@ const StackNavigator = () => {
     headerLeftContainerStyle: {
       paddingLeft: 5,
     },
+    headerRight: () => (
+      <Image
+        source={require("../../../assets/StaySafeVector.png")}
+        style={{ width: 35, height: 35 }}
+      />
+    ),
   };
 
   const AuthStack = () => (
@@ -85,9 +90,7 @@ const StackNavigator = () => {
       <Stack.Screen
         name="ActivityViewScreen"
         component={ActivityViewScreen}
-        options={{
-          title: "Activity Details",
-        }}
+        options={{ title: "Activity Details" }}
       />
       <Stack.Screen
         name="ActivityModifyScreen"
@@ -117,9 +120,7 @@ const StackNavigator = () => {
       <Stack.Screen
         name="ContactViewScreen"
         component={ContactViewScreen}
-        options={{
-          title: "Contact Details",
-        }}
+        options={{ title: "Contact Details" }}
       />
       <Stack.Screen
         name="ContactModifyScreen"
