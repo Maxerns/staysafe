@@ -75,7 +75,19 @@ const ActivityForm = ({
 
   const handleSubmit = () => {
     if (validateForm()) {
-      onSubmit({ ...activity, ...{ locations } });
+      // Apply activity name/description to location points if they exist
+      const updatedLocations = locations.map((location, index) => {
+        if (location) {
+          return {
+            ...location,
+            LocationName: index === 0 ? `From: ${activity.ActivityName}` : `To: ${activity.ActivityName}`,
+            LocationDescription: activity.ActivityDescription || location.LocationAddress || ""
+          };
+        }
+        return location;
+      });
+      
+      onSubmit({ ...activity, ...{ locations: updatedLocations } });
     }
   };
 

@@ -74,21 +74,19 @@ export const ActivityProvider = ({ children }) => {
   const updateActivity = async (activityId, activityData) => {
     try {
       setLoading(true);
-      const updatedActivity = await activityService.updateActivity(
-        activityId,
-        activityData
-      );
+      // Make the API call but don't depend on its result for local state update
+      await activityService.updateActivity(activityId, activityData);
 
-      // Replace the updated activity in the state
+      // Update local state immediately to avoid delay
       setActivities((prevActivities) =>
         prevActivities.map((activity) =>
           activity.ActivityID === activityId
-            ? { ...activity, ...updatedActivity }
+            ? { ...activity, ...activityData }
             : activity
         )
       );
 
-      return updatedActivity;
+      return activityData; // Return the data we used to update rather than waiting for API response
     } catch (err) {
       setError(err.message || "Failed to update activity");
       throw err;
@@ -224,6 +222,9 @@ export const ActivityProvider = ({ children }) => {
       console.log("Stopping tracking interval:", intervalId);
       clearInterval(intervalId);
     }
+
+    // Ensure no further updates occur
+    setLoading(false);
   };
 
   return (

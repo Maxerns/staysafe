@@ -44,7 +44,7 @@ const StackNavigator = () => {
     headerRight: () => (
       <Image
         source={require("../../../assets/StaySafeVector.png")}
-        style={{ width: 35, height: 35 }}
+        style={{ width: 35, height: 35, tintColor: theme.headerText }}
       />
     ),
   };
@@ -75,7 +75,7 @@ const StackNavigator = () => {
       <Stack.Screen
         name="Drawer"
         component={DrawerNavigator}
-        options={{ headerShown: false }}
+        options={{ headerShown: false}}
       />
 
       {/* Activity Screens */}
@@ -85,12 +85,13 @@ const StackNavigator = () => {
         options={{
           title: "Add Activity",
           animation: "slide_from_bottom",
+          headerBackTitle: "Back",
         }}
       />
       <Stack.Screen
         name="ActivityViewScreen"
         component={ActivityViewScreen}
-        options={{ title: "Activity Details" }}
+        options={{ title: "Activity Details", headerBackTitle: "Back", }}
       />
       <Stack.Screen
         name="ActivityModifyScreen"
@@ -115,12 +116,13 @@ const StackNavigator = () => {
         options={{
           title: "Add Contact",
           animation: "slide_from_bottom",
+          headerBackTitle: "Back"
         }}
       />
       <Stack.Screen
         name="ContactViewScreen"
         component={ContactViewScreen}
-        options={{ title: "Contact Details" }}
+        options={{ title: "Contact Details", headerBackTitle: "Back" }}
       />
       <Stack.Screen
         name="ContactModifyScreen"

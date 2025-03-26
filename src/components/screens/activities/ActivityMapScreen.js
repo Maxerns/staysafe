@@ -19,6 +19,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Button } from "../../UI/Button";
 import { useContacts } from "../../context/contactContext";
 import { useTheme } from "../../context/themeContext";
+import { useActivities } from "../../context/activityContext";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CARD_WIDTH = SCREEN_WIDTH * 0.8;
@@ -26,17 +27,18 @@ const CARD_SPACING = 10;
 
 const ActivityMapScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
-  const { isViewMode, activityStatus, userId } = route.params || {};
+  const { activityId, isViewMode, activityStatus, userId } = route.params || {};
   const { getContactLiveLocation } = useContacts();
+  const { loadLocation } = useActivities();
   const { theme, isDarkMode } = useTheme();
 
   const mapRef = useRef(null);
   const scrollViewRef = useRef(null);
-  const locationRef = useRef([null, null]);
+  const locationRef = useRef([null, null, null]); // [from, to, live]
   const liveLocationIntervalRef = useRef(null);
 
   // State -------------------------------------------
-  const [locations, setLocations] = useState([null, null]); // [from, to]
+  const [locations, setLocations] = useState([null, null, null]); // [from, to, live]
   const [activePoint, setActivePoint] = useState(null);
   const [mapRegion, setMapRegion] = useState({
     latitude: 37.78825,
@@ -47,8 +49,48 @@ const ActivityMapScreen = ({ navigation, route }) => {
   const [isLiveLocationFetched, setIsLiveLocationFetched] = useState(false);
   const [liveLocationError, setLiveLocationError] = useState(null);
   const [isLiveLocationLoading, setIsLiveLocationLoading] = useState(false);
+  const [isLoadingInitialLocations, setIsLoadingInitialLocations] = useState(false);
 
-  // Handlers ----------------------------------------
+  // Load locations for view mode -------------------------------------
+  useEffect(() => {
+    const loadLocationsFromActivity = async () => {
+      if (isViewMode && activityId) {
+        try {
+          setIsLoadingInitialLocations(true);
+          
+          // Load activity locations from the database
+          const fromLocation = await loadLocation(route.params?.fromLocationId);
+          const toLocation = await loadLocation(route.params?.toLocationId);
+          
+          if (fromLocation && fromLocation[0] && toLocation && toLocation[0]) {
+            const newLocations = [fromLocation[0], toLocation[0], null];
+            locationRef.current = newLocations;
+            setLocations(newLocations);
+            
+            // Set map region based on first location
+            if (
+              fromLocation[0].LocationLatitude &&
+              fromLocation[0].LocationLongitude
+            ) {
+              setMapRegion({
+                latitude: parseFloat(fromLocation[0].LocationLatitude),
+                longitude: parseFloat(fromLocation[0].LocationLongitude),
+                latitudeDelta: 0.05,
+                longitudeDelta: 0.05,
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Error loading activity locations:", error);
+          Alert.alert("Error", "Failed to load activity locations");
+        } finally {
+          setIsLoadingInitialLocations(false);
+        }
+      }
+    };
+    
+    loadLocationsFromActivity();
+  }, [activityId, isViewMode]);
 
   const reverseGeocode = async (latitude, longitude) => {
     try {
@@ -128,17 +170,32 @@ const ActivityMapScreen = ({ navigation, route }) => {
     try {
       setIsLiveLocationLoading(true);
       setLiveLocationError(null);
-      console.log("Fetching live location for user ID:", userId);
-
-      let liveLocation;
+      
+      let liveLocation = null;
+      
       try {
+        // First try to get location from the API
         liveLocation = await getContactLiveLocation(userId);
-        console.log("Live location fetched:", liveLocation);
+        console.log("Live location from API:", liveLocation);
       } catch (err) {
-        console.error("Error from getContactLiveLocation:", err);
-        // Try to use device's current location as fallback
-        liveLocation = await locationService.getCurrentLocation();
-        console.log("Using current device location as fallback:", liveLocation);
+        console.error("Error getting location from API:", err);
+      }
+      
+      // If API failed, try device location as fallback for demo/testing
+      if (!liveLocation || !liveLocation.latitude || !liveLocation.longitude) {
+        try {
+          console.log("Trying device location as fallback");
+          const deviceLocation = await Location.getCurrentPositionAsync({});
+          liveLocation = {
+            latitude: deviceLocation.coords.latitude,
+            longitude: deviceLocation.coords.longitude,
+            timestamp: deviceLocation.timestamp,
+          };
+          console.log("Using device location:", liveLocation);
+        } catch (deviceErr) {
+          console.error("Error getting device location:", deviceErr);
+          throw new Error("Could not get location from any source");
+        }
       }
 
       if (
@@ -150,18 +207,18 @@ const ActivityMapScreen = ({ navigation, route }) => {
         const liveLocationPoint = {
           LocationLatitude: liveLocation.latitude,
           LocationLongitude: liveLocation.longitude,
-          LocationName: "User's Live Location",
+          LocationName: "Live Location",
           LocationAddress: `Last updated: ${new Date(
             liveLocation.timestamp || Date.now()
-          ).toLocaleString()}`,
+          ).toLocaleTimeString()}`,
           LocationDescription: "Real-time position",
         };
 
-        setLocations((prevLocations) => {
-          const updatedLocations = [...prevLocations];
-          updatedLocations[2] = liveLocationPoint;
-          return updatedLocations;
-        });
+        // Update locations array and reference
+        const updatedLocations = [...locations];
+        updatedLocations[2] = liveLocationPoint;
+        setLocations(updatedLocations);
+        locationRef.current = updatedLocations;
 
         // Focus map on live location
         if (mapRef.current) {
@@ -188,8 +245,10 @@ const ActivityMapScreen = ({ navigation, route }) => {
     }
   };
 
+  // Set up live location tracking
   useEffect(() => {
     if (isViewMode && activityStatus === 2 && userId) {
+      // Fetch immediately
       fetchLiveLocation();
 
       // Set up polling every 15 seconds
@@ -200,6 +259,7 @@ const ActivityMapScreen = ({ navigation, route }) => {
     return () => {
       if (liveLocationIntervalRef.current) {
         clearInterval(liveLocationIntervalRef.current);
+        liveLocationIntervalRef.current = null;
       }
     };
   }, [isViewMode, activityStatus, userId]);
@@ -214,18 +274,14 @@ const ActivityMapScreen = ({ navigation, route }) => {
           LocationLongitude: longitude,
           LocationAddress: geoData.address,
           LocationPostcode: geoData.postcode,
-          LocationName: "",
-          LocationDescription: "",
+          // No longer requiring user input for these fields
+          LocationName: activePoint === 0 ? "Starting Point" : "Destination Point",
+          LocationDescription: geoData.address || "",
         };
 
         if (activePoint === 0 || activePoint === 1) {
           const newLocations = [...locationRef.current];
-          newLocations[activePoint] = {
-            ...newLocation,
-            LocationName: locationRef.current[activePoint]?.LocationName || "",
-            LocationDescription:
-              locationRef.current[activePoint]?.LocationDescription || "",
-          };
+          newLocations[activePoint] = newLocation;
           locationRef.current = newLocations;
           setLocations(newLocations);
           setActivePoint(null);
@@ -234,8 +290,7 @@ const ActivityMapScreen = ({ navigation, route }) => {
             const newLocations = [...locationRef.current];
             newLocations[0] = {
               ...newLocation,
-              LocationName: "",
-              LocationDescription: "",
+              LocationName: "Starting Point",
             };
             locationRef.current = newLocations;
             setLocations(newLocations);
@@ -247,8 +302,7 @@ const ActivityMapScreen = ({ navigation, route }) => {
             const newLocations = [...locationRef.current];
             newLocations[1] = {
               ...newLocation,
-              LocationName: "",
-              LocationDescription: "",
+              LocationName: "Destination Point",
             };
             locationRef.current = newLocations;
             setLocations(newLocations);
@@ -285,19 +339,7 @@ const ActivityMapScreen = ({ navigation, route }) => {
       return;
     }
 
-    if (
-      !locationRef.current[0].LocationName ||
-      !locationRef.current[0].LocationDescription ||
-      !locationRef.current[1].LocationName ||
-      !locationRef.current[1].LocationDescription
-    ) {
-      Alert.alert(
-        "Missing Information",
-        "Please fill in title and description for both points"
-      );
-      return;
-    }
-
+    // Remove validation for title and description fields
     if (route.params?.onLocationsSelected) {
       route.params.onLocationsSelected(locationRef.current);
     }
@@ -399,7 +441,7 @@ const ActivityMapScreen = ({ navigation, route }) => {
             style={[styles.cardTitle, { color: theme.text }]}
             numberOfLines={1}
           >
-            {point.LocationName || `Point ${pointLabel}`}
+            {pointIndex === 0 ? "Starting Point" : pointIndex === 1 ? "Destination Point" : "Live Location"}
           </Text>
           {!isViewMode && !isLivePoint && (
             <TouchableOpacity
@@ -438,71 +480,7 @@ const ActivityMapScreen = ({ navigation, route }) => {
           </View>
         ) : null}
 
-        {point.LocationDescription && (
-          <View style={styles.descriptionContainer}>
-            <Ionicons
-              name="information-circle-outline"
-              size={16}
-              color={isDarkMode ? "#aaa" : "#757575"}
-            />
-            <Text style={[styles.descriptionText, { color: theme.text }]}>
-              {point.LocationDescription}
-            </Text>
-          </View>
-        )}
-
-        {!isViewMode && !isLivePoint && (
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.inputBackground,
-                  color: theme.text,
-                  borderColor: theme.border,
-                },
-              ]}
-              placeholder="Title"
-              placeholderTextColor={isDarkMode ? "#777" : "#9E9E9E"}
-              value={point.LocationName}
-              onChangeText={(text) => {
-                const newLocations = [...locationRef.current];
-                newLocations[pointIndex] = {
-                  ...newLocations[pointIndex],
-                  LocationName: text,
-                };
-                locationRef.current = newLocations;
-                setLocations(newLocations);
-              }}
-            />
-
-            <TextInput
-              style={[
-                styles.input,
-                styles.descriptionInput,
-                {
-                  backgroundColor: theme.inputBackground,
-                  color: theme.text,
-                  borderColor: theme.border,
-                },
-              ]}
-              placeholder="Description"
-              placeholderTextColor={isDarkMode ? "#777" : "#9E9E9E"}
-              multiline
-              numberOfLines={2}
-              value={point.LocationDescription}
-              onChangeText={(text) => {
-                const newLocations = [...locationRef.current];
-                newLocations[pointIndex] = {
-                  ...newLocations[pointIndex],
-                  LocationDescription: text,
-                };
-                locationRef.current = newLocations;
-                setLocations(newLocations);
-              }}
-            />
-          </View>
-        )}
+        {/* Remove the input container that was here */}
 
         <View style={styles.cardActions}>
           <TouchableOpacity
@@ -552,38 +530,12 @@ const ActivityMapScreen = ({ navigation, route }) => {
     );
   };
 
-  const canSave =
-    locationRef.current[0] &&
-    locationRef.current[1] &&
-    locationRef.current[0].LocationName &&
-    locationRef.current[0].LocationDescription &&
-    locationRef.current[1].LocationName &&
-    locationRef.current[1].LocationDescription;
+  const canSave = locationRef.current[0] && locationRef.current[1];
 
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
     >
-      <View style={[styles.header, { backgroundColor: theme.card }]}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require("../../../../assets/StaySafeVector.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
-
-        <View style={styles.headerTextContainer}>
-          <Text style={[styles.title, { color: theme.primary }]}>
-            {isViewMode ? "Activity Map" : "Select Locations"}
-          </Text>
-          <Text style={[styles.subtitle, { color: theme.text }]}>
-            {isViewMode
-              ? "Track your journey location"
-              : "Tap on the map to set points"}
-          </Text>
-        </View>
-      </View>
 
       <View style={styles.mapContainer}>
         <MapView

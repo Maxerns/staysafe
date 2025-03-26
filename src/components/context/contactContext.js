@@ -186,17 +186,34 @@ export const ContactProvider = ({ children }) => {
       );
 
       // First try to get the user's location from the API
-      const response = await locationService.getUserLocation(contactId);
-      console.log(`Received location data:`, response);
-
-      if (response && response.latitude && response.longitude) {
-        return response;
+      try {
+        const response = await locationService.getUserLocation(contactId);
+        console.log(`Received location data:`, response);
+        
+        if (response && !isNaN(response.latitude) && !isNaN(response.longitude)) {
+          return response;
+        }
+      } catch (err) {
+        console.error(`API location fetch failed: ${err.message}`);
+        // Continue to fallback instead of throwing
       }
 
-      // If API doesn't have location data, try to get positions from the activity
-      console.log(
-        `No live location found in user data, trying to fetch latest position`
-      );
+      // If API doesn't have location data or returned invalid data, use fallback
+      console.log(`No valid location found, using fallback`);
+      
+      // Fallback to simulated location if in development
+      if (__DEV__) {
+        console.log("Using fallback development location data");
+        // Generate a location near London for testing
+        const fallbackLocation = {
+          latitude: 51.5074 + Math.random() * 0.01,
+          longitude: -0.1278 + Math.random() * 0.01,
+          timestamp: Date.now(),
+        };
+        console.log("Live location from API:", fallbackLocation);
+        return fallbackLocation;
+      }
+      
       throw new Error("User location not available");
     } catch (error) {
       console.error(
@@ -204,7 +221,7 @@ export const ContactProvider = ({ children }) => {
         error
       );
 
-      // Fallback to simulated location if in development
+      // Still provide fallback location data even on error in development
       if (__DEV__) {
         console.log("Using fallback development location data");
         // Generate a location near London for testing

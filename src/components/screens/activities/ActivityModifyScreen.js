@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Alert, Image, Text, ScrollView } from "react-native";
+import React, { useEffect, useState, useRef } from "react";
+import { View, StyleSheet, Alert, Image, Text, ScrollView, ActivityIndicator } from "react-native";
 import ActivityForm from "../../entity/activities/ActivityForm";
 import Screen from "../../layout/Screen";
 import { useActivities } from "../../context/activityContext";
@@ -16,22 +16,42 @@ const ActivityModifyScreen = ({ navigation, route }) => {
 
   // State -------------------------------------------
   const [locations, setLocations] = useState([null, null]);
+  const [isLoading, setIsLoading] = useState(false);
+  const locationsLoadedRef = useRef(false);
 
   // Load locations on mount
   useEffect(() => {
-    const loadInitialLocations = async () => {
-      try {
-        const fromLocation = await loadLocation(activity.ActivityFromID);
-        const toLocation = await loadLocation(activity.ActivityToID);
-        setLocations([fromLocation[0], toLocation[0]]);
-      } catch (error) {
-        Alert.alert("Error", `Failed to load locations: ${error.message}`);
-        console.error("Error loading locations:", error.message);
-      }
-    };
+    // Only load locations if we haven't already and we have valid IDs
+    if (!locationsLoadedRef.current && 
+        activity.ActivityFromID && 
+        activity.ActivityToID && 
+        !isLoading) {
+      
+      const loadInitialLocations = async () => {
+        try {
+          setIsLoading(true);
+          
+          const fromLocation = await loadLocation(activity.ActivityFromID);
+          const toLocation = await loadLocation(activity.ActivityToID);
+          
+          if (fromLocation && fromLocation[0] && toLocation && toLocation[0]) {
+            setLocations([fromLocation[0], toLocation[0]]);
+            // Mark as loaded to prevent future loads
+            locationsLoadedRef.current = true;
+          }
+        } catch (error) {
+          Alert.alert("Error", `Failed to load locations: ${error.message}`);
+          console.error("Error loading locations:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
-    loadInitialLocations();
-  }, [activity.ActivityFromID, activity.ActivityToID, loadLocation]);
+      loadInitialLocations();
+    }
+  // Removed console.log to reduce unnecessary operations
+  // IMPORTANT: Only depend on the IDs, not any objects that might change frequently
+  }, [activity.ActivityFromID, activity.ActivityToID]);
 
   // Handlers ----------------------------------------
   const handleFormSubmit = async (data) => {
@@ -54,7 +74,7 @@ const ActivityModifyScreen = ({ navigation, route }) => {
         ActivityUserID: user.info.id,
         ActivityFromID: fromLocationId,
         ActivityToID: toLocationId,
-        ActivityStatusID: 1,
+        ActivityStatusID: activity.ActivityStatusID,
       };
 
       onModify(newActivity);
@@ -88,16 +108,25 @@ const ActivityModifyScreen = ({ navigation, route }) => {
         </View>
       </View>
 
-      <ScrollView style={styles.contentContainer}>
-        <View style={[styles.formContainer, { backgroundColor: theme.card }]}>
-          <ActivityForm
-            originalActivity={activity}
-            onSubmit={handleFormSubmit}
-            onCancel={() => navigation.goBack()}
-            navigation={navigation}
-            initialLocations={locations}
-          />
-        </View>
+      <ScrollView style={styles.contentContainer} keyboardShouldPersistTaps="handled">
+        {isLoading ? (
+          <View style={[styles.loadingContainer, { backgroundColor: theme.card }]}>
+            <ActivityIndicator size="large" color={theme.primary} />
+            <Text style={[styles.loadingText, { color: theme.text }]}>
+              Loading activity data...
+            </Text>
+          </View>
+        ) : (
+          <View style={[styles.formContainer, { backgroundColor: theme.card }]}>
+            <ActivityForm
+              originalActivity={activity}
+              onSubmit={handleFormSubmit}
+              onCancel={() => navigation.goBack()}
+              navigation={navigation}
+              initialLocations={locations}
+            />
+          </View>
+        )}
       </ScrollView>
     </Screen>
   );
@@ -150,6 +179,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+  },
+  loadingContainer: {
+    borderRadius: 12,
+    padding: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    height: 200,
+  },
+  loadingText: {
+    marginTop: 15,
+    fontSize: 16,
   },
 });
 

@@ -1,11 +1,20 @@
 import Screen from "../../layout/Screen";
-import ActivityView from "../../entity/activities/ActivityView";
 import { useActivities } from "../../context/activityContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Button, ButtonTray } from "../../UI/Button";
-import { Alert, Text, StyleSheet, View, Image, ScrollView } from "react-native";
+import {
+  Alert,
+  Text,
+  StyleSheet,
+  View,
+  ScrollView,
+  ActivityIndicator,
+  SafeAreaView,
+  TouchableOpacity,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../context/themeContext";
+import { AuthContext } from "../../context/authContext";
 
 const ActivityViewScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
@@ -17,113 +26,244 @@ const ActivityViewScreen = ({ navigation, route }) => {
     loadLocation,
   } = useActivities();
   const { theme, isDarkMode } = useTheme();
+  const { user } = useContext(AuthContext);
 
   // State -------------------------------------------
   const [trackingInterval, setTrackingInterval] = useState(null);
   const [locationFrom, setLocationFrom] = useState(null);
   const [locationTo, setLocationTo] = useState(null);
   const [isLoadingLocations, setIsLoadingLocations] = useState(true);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [currentActivity, setCurrentActivity] = useState(activity);
+
+  // Check if current user is the activity owner
+  const isOwner = user?.info?.id === currentActivity.ActivityUserID;
+
   // Handlers ----------------------------------------
   const goToModifyScreen = () =>
-    navigation.navigate("ActivityModifyScreen", { activity, onModify });
+    navigation.navigate("ActivityModifyScreen", {
+      activity: currentActivity,
+      onModify,
+    });
 
   const handleStatusChange = async (newStatusId) => {
     try {
-      const updatedActivity = {
-        ...activity,
+      // Prevent multiple status updates simultaneously
+      if (updatingStatus) return;
+
+      setUpdatingStatus(true);
+
+      // Update the local state immediately for UI feedback
+      setCurrentActivity((prev) => ({
+        ...prev,
         ActivityStatusID: newStatusId,
-      };
+      }));
 
-      await updateActivity(activity.ActivityID, updatedActivity);
-
+      // Start or stop tracking as needed
       if (newStatusId === 2) {
-        console.log(
-          "Starting live tracking for activity:",
-          activity.ActivityID
+        const intervalId = await startLiveLocationTracking(
+          currentActivity.ActivityID
         );
-        const intervalId = await startLiveLocationTracking(activity.ActivityID);
-        console.log("Tracking interval created:", intervalId);
         setTrackingInterval(intervalId);
 
-        // Update the local activity state to reflect the new status
-        activity.ActivityStatusID = 2;
+        Alert.alert(
+          "Journey Started",
+          "Live location tracking has been activated. Your trusted contacts will be able to monitor your journey."
+        );
       } else if (trackingInterval) {
-        console.log("Stopping tracking interval:", trackingInterval);
         stopLiveLocationTracking(trackingInterval);
         setTrackingInterval(null);
+
+        const statusMessages = {
+          3: "Journey paused. You can resume at any time.",
+          4: "Journey canceled. Location tracking has been stopped.",
+          5: "Journey completed successfully! Location tracking has been stopped.",
+        };
+
+        Alert.alert(
+          "Status Updated",
+          statusMessages[newStatusId] || "Status updated successfully"
+        );
       }
 
-      Alert.alert("Success", `Activity status updated to ${newStatusId}`);
+      // Call API to update in the backend
+      const updatedActivity = {
+        ...currentActivity,
+        ActivityStatusID: newStatusId,
+      };
+      await updateActivity(currentActivity.ActivityID, updatedActivity);
     } catch (error) {
       console.error("Error updating activity status:", error);
       Alert.alert("Error", `Failed to update status: ${error.message}`);
+
+      // Revert to original status if update failed
+      setCurrentActivity((prev) => ({
+        ...prev,
+        ActivityStatusID: activity.ActivityStatusID,
+      }));
+    } finally {
+      setUpdatingStatus(false);
     }
   };
 
+  const getStatusInfo = (statusId) => {
+    const statuses = {
+      1: {
+        label: "Planned",
+        color: theme.inactive,
+        icon: "calendar-outline",
+        description: "This journey is scheduled but hasn't started yet.",
+      },
+      2: {
+        label: "In Progress",
+        color: theme.info,
+        icon: "walk-outline",
+        description:
+          "You're currently on this journey with active location tracking.",
+      },
+      3: {
+        label: "Paused",
+        color: theme.warning,
+        icon: "pause-outline",
+        description: "This journey has been temporarily paused.",
+      },
+      4: {
+        label: "Canceled",
+        color: theme.error,
+        icon: "close-circle-outline",
+        description: "This journey has been canceled.",
+      },
+      5: {
+        label: "Completed",
+        color: theme.success,
+        icon: "checkmark-circle-outline",
+        description: "This journey has been completed successfully.",
+      },
+    };
+
+    return statuses[statusId] || statuses[1];
+  };
+
+  // Fix the reference to theme in statusButtonsContainer style
+  const statusButtonsContainer = {
+    marginVertical: 16,
+    backgroundColor: theme.card,
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  };
+
+  // Modify the status buttons rendering to check ownership
   const renderStatusButtons = () => {
+    // Don't show status buttons for completed or canceled activities
+    if (
+      currentActivity.ActivityStatusID === 4 ||
+      currentActivity.ActivityStatusID === 5
+    ) {
+      return null;
+    }
+
+    // Only owners can change status
+    if (!isOwner) {
+      return null;
+    }
+
     const statusActions = [
-      { id: 2, label: "Start", color: theme.success },
+      { id: 2, label: "Start Journey", color: theme.success },
       { id: 3, label: "Pause", color: theme.warning },
       { id: 4, label: "Cancel", color: theme.error },
       { id: 5, label: "Complete", color: theme.info },
     ];
 
-    return statusActions.map((action) => (
-      <Button
-        key={action.id}
-        label={action.label}
-        styleButton={{
-          backgroundColor:
-            action.id === activity.ActivityStatusID
-              ? isDarkMode
-                ? "#333333"
-                : "#e0e0e0"
-              : action.color,
-          paddingHorizontal: 8,
-          paddingVertical: 6,
-          minWidth: 70,
-          margin: 2,
-        }}
-        styleLabel={{
-          color:
-            action.id === activity.ActivityStatusID
-              ? isDarkMode
-                ? "#999999"
-                : "#777777"
-              : theme.buttonText,
-          fontSize: 11,
-        }}
-        onClick={() => handleStatusChange(action.id)}
-        disabled={action.id === activity.ActivityStatusID}
-      />
-    ));
+    return (
+      <View style={statusButtonsContainer}>
+        <Text style={[styles.sectionSubtitle, { color: theme.text }]}>
+          Change status:
+        </Text>
+
+        <ButtonTray style={styles.buttonTray}>
+          {statusActions.map((action) => (
+            <Button
+              key={action.id}
+              label={action.label}
+              styleButton={{
+                backgroundColor:
+                  action.id === currentActivity.ActivityStatusID
+                    ? isDarkMode
+                      ? "#333333"
+                      : "#e0e0e0"
+                    : action.color,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                margin: 4,
+              }}
+              styleLabel={{
+                color:
+                  action.id === currentActivity.ActivityStatusID
+                    ? isDarkMode
+                      ? "#999999"
+                      : "#777777"
+                    : theme.buttonText,
+                fontSize: 14,
+              }}
+              onClick={() => handleStatusChange(action.id)}
+              disabled={
+                action.id === currentActivity.ActivityStatusID || updatingStatus
+              }
+            />
+          ))}
+        </ButtonTray>
+
+        {updatingStatus && (
+          <View style={styles.loadingStatus}>
+            <ActivityIndicator size="small" color={theme.primary} />
+            <Text style={[styles.loadingText, { color: theme.text }]}>
+              Updating status...
+            </Text>
+          </View>
+        )}
+      </View>
+    );
   };
 
-  const goToMapScreen = () => {
-    if (isLoadingLocations) {
-      Alert.alert("Loading", "Please wait while locations are being loaded");
-      return;
+  const goToMapScreen = (e) => {
+    // Prevent any default events that might cause scrolling
+    if (e && e.preventDefault) {
+      e.preventDefault();
     }
 
-    if (!locationFrom || !locationTo) {
-      Alert.alert("Error", "Location data not available");
-      return;
+    // Clear live location tracking interval before navigating
+    if (trackingInterval) {
+      stopLiveLocationTracking(trackingInterval);
+      setTrackingInterval(null);
     }
 
-    navigation.navigate("ActivityMapScreen", {
-      locations: [locationFrom, locationTo],
-      isViewMode: true,
-      activityStatus: activity.ActivityStatusID,
-      userId: activity.ActivityUserID,
-    });
+    // Check if we have at least basic location info
+    if (currentActivity.ActivityFromID && currentActivity.ActivityToID) {
+      // Navigate with proper location IDs
+      navigation.navigate("ActivityMapScreen", {
+        activityId: currentActivity.ActivityID,
+        fromLocationId: currentActivity.ActivityFromID,
+        toLocationId: currentActivity.ActivityToID,
+        isViewMode: true,
+        activityStatus: currentActivity.ActivityStatusID,
+        userId: currentActivity.ActivityUserID,
+      });
+    } else {
+      Alert.alert("Error", "This activity doesn't have location information");
+    }
   };
 
   useEffect(() => {
     const fetchLocations = async () => {
       try {
         setIsLoadingLocations(true);
-        const fromLocation = await loadLocation(activity.ActivityFromID);
-        const toLocation = await loadLocation(activity.ActivityToID);
+        const fromLocation = await loadLocation(currentActivity.ActivityFromID);
+        const toLocation = await loadLocation(currentActivity.ActivityToID);
 
         setLocationFrom(fromLocation[0]);
         setLocationTo(toLocation[0]);
@@ -136,22 +276,15 @@ const ActivityViewScreen = ({ navigation, route }) => {
     };
 
     fetchLocations();
-  }, [activity.ActivityFromID, activity.ActivityToID]);
+  }, [currentActivity.ActivityFromID, currentActivity.ActivityToID]);
 
   useEffect(() => {
-    console.log("Current activity status:", activity.ActivityStatusID);
-
-    if (activity.ActivityStatusID === 2) {
-      console.log(
-        "Starting tracking on initial load for activity:",
-        activity.ActivityID
-      );
+    if (currentActivity.ActivityStatusID === 2) {
       const initTracking = async () => {
         try {
           const intervalId = await startLiveLocationTracking(
-            activity.ActivityID
+            currentActivity.ActivityID
           );
-          console.log("Tracking started with interval:", intervalId);
           if (intervalId) {
             setTrackingInterval(intervalId);
           }
@@ -165,185 +298,328 @@ const ActivityViewScreen = ({ navigation, route }) => {
 
     return () => {
       if (trackingInterval) {
-        console.log("Cleaning up tracking interval:", trackingInterval);
         stopLiveLocationTracking(trackingInterval);
       }
     };
-  }, [activity.ActivityStatusID]);
+  }, [currentActivity.ActivityStatusID]);
 
   // View --------------------------------------------
-  return (
-    <Screen style={[styles.screen, { backgroundColor: theme.background }]}>
-      <View style={[styles.header, { backgroundColor: theme.card }]}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require("../../../../assets/StaySafeVector.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
+  const statusInfo = getStatusInfo(currentActivity.ActivityStatusID);
 
-        <View style={styles.headerTextContainer}>
-          <Text style={[styles.title, { color: theme.primary }]}>
-            Activity Details
+  // Render the action buttons for owner or viewer
+  const renderActionButtons = () => {
+    // Only show action buttons to the owner
+    if (!isOwner) {
+      return (
+        <View style={[styles.viewerNote, { backgroundColor: theme.card }]}>
+          <Text style={{ color: theme.secondaryText, textAlign: 'center' }}>
+            You're viewing someone else's activity. Only the owner can edit or delete it.
           </Text>
-          <Text style={[styles.subtitle, { color: theme.text }]}>
-            {activity.ActivityName ||
-              activity.ActivityLabel ||
-              "Unnamed Activity"}
-          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={[styles.actionsContainer, { backgroundColor: theme.card }]}>
+        <View style={styles.actionButtonsRow}>
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.info }]}
+            onPress={goToModifyScreen}
+          >
+            <Ionicons name="create-outline" size={22} color="#FFFFFF" />
+            <Text style={styles.actionButtonText}>Edit</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.error }]}
+            onPress={() => onDelete(currentActivity.ActivityID)}
+          >
+            <Ionicons name="trash-outline" size={22} color="#FFFFFF" />
+            <Text style={styles.actionButtonText}>Delete</Text>
+          </TouchableOpacity>
         </View>
       </View>
+    );
+  };
 
-      <ScrollView style={styles.contentContainer}>
-        <ActivityView
-          activity={activity}
-          onDelete={onDelete}
-          onModify={goToModifyScreen}
-        />
-
-        {isLoadingLocations ? (
-          <View
-            style={[styles.loadingContainer, { backgroundColor: theme.card }]}
-          >
-            <Text style={[styles.loadingText, { color: theme.text }]}>
-              Loading location details...
-            </Text>
-          </View>
-        ) : (
-          <View
-            style={[styles.locationsContainer, { backgroundColor: theme.card }]}
-          >
-            <Text style={[styles.locationTitle, { color: theme.primary }]}>
-              From: {locationFrom?.LocationName || "N/A"}
-            </Text>
-            <Text style={[styles.locationAddress, { color: theme.text }]}>
-              {locationFrom?.LocationAddress || "No address"}
-            </Text>
-
-            <Text style={[styles.locationTitle, { color: theme.primary }]}>
-              To: {locationTo?.LocationName || "N/A"}
-            </Text>
-            <Text style={[styles.locationAddress, { color: theme.text }]}>
-              {locationTo?.LocationAddress || "No address"}
-            </Text>
-          </View>
-        )}
-
-        <View style={[styles.statusContainer, { backgroundColor: theme.card }]}>
-          <Text style={[styles.statusTitle, { color: theme.primary }]}>
-            Activity Status
+  return (
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Activity Header */}
+        <View style={[styles.header, { backgroundColor: theme.card }]}>
+          <Text style={[styles.titleText, { color: theme.text }]}>
+            {currentActivity.ActivityName}
           </Text>
-          <ButtonTray style={styles.buttonTray}>
-            {renderStatusButtons()}
-          </ButtonTray>
 
-          <Button
-            label="View Map"
-            icon={
-              <Ionicons name="map-outline" size={16} color={theme.buttonText} />
-            }
-            styleButton={[styles.mapButton, { backgroundColor: theme.primary }]}
-            onClick={goToMapScreen}
-          />
+          {currentActivity.ActivityDescription && (
+            <Text
+              style={[styles.descriptionText, { color: theme.secondaryText }]}
+            >
+              {currentActivity.ActivityDescription}
+            </Text>
+          )}
+
+          {/* Status Badge */}
+          <View
+            style={[styles.statusBadge, { backgroundColor: statusInfo.color }]}
+          >
+            <Ionicons name={statusInfo.icon} size={18} color="#FFFFFF" />
+            <Text style={styles.statusText}>{statusInfo.label}</Text>
+          </View>
+
+          <Text
+            style={[styles.statusDescription, { color: theme.secondaryText }]}
+          >
+            {statusInfo.description}
+          </Text>
         </View>
+
+        {/* Location Summary with Map Preview */}
+        <TouchableOpacity
+          style={[styles.mapPreviewContainer, { backgroundColor: theme.card }]}
+          onPress={goToMapScreen}
+          disabled={isLoadingLocations}
+        >
+          <View style={styles.mapInfoHeader}>
+            <Ionicons name="map-outline" size={22} color={theme.primary} />
+            <Text style={[styles.mapInfoTitle, { color: theme.text }]}>
+              Journey Details
+            </Text>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={theme.secondaryText}
+            />
+          </View>
+
+          {isLoadingLocations ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={theme.primary} />
+              <Text
+                style={[styles.loadingText, { color: theme.secondaryText }]}
+              >
+                Loading location information...
+              </Text>
+            </View>
+          ) : (
+            <>
+              <View style={styles.locationRow}>
+                <View
+                  style={[
+                    styles.locationBadge,
+                    { backgroundColor: theme.info },
+                  ]}
+                >
+                  <Text style={styles.locationBadgeText}>From</Text>
+                </View>
+                <Text
+                  style={[styles.locationText, { color: theme.text }]}
+                  numberOfLines={1}
+                >
+                  {locationFrom?.LocationAddress || "Starting point not set"}
+                </Text>
+              </View>
+
+              <View style={styles.locationRow}>
+                <View
+                  style={[
+                    styles.locationBadge,
+                    { backgroundColor: theme.success },
+                  ]}
+                >
+                  <Text style={styles.locationBadgeText}>To</Text>
+                </View>
+                <Text
+                  style={[styles.locationText, { color: theme.text }]}
+                  numberOfLines={1}
+                >
+                  {locationTo?.LocationAddress || "Destination not set"}
+                </Text>
+              </View>
+
+              <Text style={[styles.tapToViewText, { color: theme.primary }]}>
+                Tap to view on map
+              </Text>
+            </>
+          )}
+        </TouchableOpacity>
+
+        {/* Status Actions Section - Only for owner */}
+        {renderStatusButtons()}
+
+        {/* Activity Actions (Edit/Delete) - Only for owner */}
+        {renderActionButtons()}
       </ScrollView>
-    </Screen>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  screen: {
+  // ...existing code...
+  container: {
     flex: 1,
   },
+  scrollContent: {
+    padding: 16,
+  },
   header: {
-    paddingTop: 20,
-    paddingBottom: 15,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  logoContainer: {
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  logo: {
-    width: 120,
-    height: 60,
-  },
-  headerTextContainer: {
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-  },
-  subtitle: {
-    fontSize: 16,
-    marginTop: 5,
-    textAlign: "center",
-  },
-  contentContainer: {
-    padding: 20,
-  },
-  loadingContainer: {
-    padding: 15,
-    borderRadius: 8,
-    marginVertical: 10,
+    padding: 16,
+    borderRadius: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowRadius: 3,
     elevation: 2,
+    marginBottom: 16,
   },
-  loadingText: {
-    textAlign: "center",
-  },
-  locationsContainer: {
-    padding: 15,
-    borderRadius: 8,
-    marginVertical: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  locationTitle: {
+  titleText: {
+    fontSize: 20,
     fontWeight: "bold",
-    fontSize: 16,
+  },
+  descriptionText: {
+    fontSize: 14,
     marginTop: 8,
-    marginBottom: 4,
+    marginBottom: 12,
   },
-  locationAddress: {
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginTop: 8,
     marginBottom: 8,
   },
-  statusContainer: {
-    padding: 15,
-    borderRadius: 8,
-    marginVertical: 10,
+  statusText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    marginLeft: 6,
+  },
+  statusDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  statusButtonsContainer: {
+    marginVertical: 16,
+
+    borderRadius: 12,
+    padding: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowRadius: 3,
     elevation: 2,
   },
-  statusTitle: {
-    fontSize: 18,
+  mapPreviewContainer: {
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  mapInfoHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  mapInfoTitle: {
+    flex: 1,
+    fontSize: 16,
     fontWeight: "bold",
+    marginLeft: 8,
+  },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
+  },
+  locationBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    marginRight: 8,
+  },
+  locationBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  locationText: {
+    flex: 1,
+    fontSize: 14,
+  },
+  tapToViewText: {
+    textAlign: "center",
+    fontSize: 14,
+    fontWeight: "bold",
+    marginTop: 8,
+  },
+  loadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+  },
+  loadingText: {
+    marginTop: 8,
+    fontSize: 14,
+  },
+  actionsContainer: {
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    marginTop: 16,
+  },
+  actionButtonsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
+    marginHorizontal: 6,
+  },
+  actionButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    marginLeft: 6,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    marginBottom: 8,
   },
   buttonTray: {
     justifyContent: "space-between",
     flexWrap: "wrap",
   },
-  mapButton: {
-    marginTop: 15,
+  loadingStatus: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8,
+    padding: 8,
+  },
+  viewerNote: {
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    marginTop: 16,
   },
 });
 
