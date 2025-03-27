@@ -26,7 +26,7 @@ const ContactItem = ({ contact, onSelect }) => {
               style={styles.avatar}
             />
           ) : (
-            <Icons.User width={40} height={40} color="#122f76" />
+            <Ionicons name="person" size={24} color={theme.primary} />
           )}
         </View>
         <View style={styles.textContainer}>
@@ -40,9 +40,7 @@ const ContactItem = ({ contact, onSelect }) => {
           )}
         </View>
         <View style={styles.chevron}>
-          <Text style={styles.chevronText}>
-            <Ionicons name="chevron-forward" size={16} color={theme.text} />
-          </Text>
+          <Ionicons name="chevron-forward" size={20} color="#999" />
         </View>
       </View>
     </Pressable>

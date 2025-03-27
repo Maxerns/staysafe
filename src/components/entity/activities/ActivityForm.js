@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import Icons from "../../UI/Icons.js";
+import { Ionicons } from "@expo/vector-icons";
 import Form from "../../UI/Form.js";
 import { Button } from "../../UI/Button";
 import { useTheme } from "../../context/themeContext.js";
@@ -21,7 +21,7 @@ const ActivityForm = ({
   initialLocations,
 }) => {
   // Initialisations ---------------------------------
-   const { theme } = useTheme();
+  const { theme } = useTheme();
   // State -------------------------------------------
   const [activity, setActivity] = useState(originalActivity || defaultActivity);
   const [locations, setLocations] = useState(initialLocations || [null, null]);
@@ -83,12 +83,12 @@ const ActivityForm = ({
           return {
             ...location,
             LocationName: activity.ActivityName,
-            LocationDescription: activity.ActivityDescription
+            LocationDescription: activity.ActivityDescription,
           };
         }
         return location;
       });
-      
+
       onSubmit({ ...activity, ...{ locations: updatedLocations } });
     }
   };
@@ -103,7 +103,9 @@ const ActivityForm = ({
   // View --------------------------------------------
 
   const submitLabel = originalActivity ? "Modify" : "Add";
-  const submitIcon = originalActivity ? <Icons.Edit /> : <Icons.Add />;
+  const submitIcon = originalActivity ? 
+    <Ionicons name="create-outline" size={16} color="white" /> : 
+    <Ionicons name="add-outline" size={16} color="white" />;
 
   return (
     <Form
@@ -111,7 +113,6 @@ const ActivityForm = ({
       onCancel={onCancel}
       submitLabel={submitLabel}
       submitIcon={submitIcon}
-      
     >
       <View>
         <Button
@@ -131,8 +132,12 @@ const ActivityForm = ({
         ) : null}
         {locations[0] && locations[1] && (
           <View style={styles.locationInfo}>
-            <Text>From: {locations[0]?.LocationAddress || "No address"}</Text>
-            <Text>To: {locations[1]?.LocationAddress || "No address"}</Text>
+            <Text style={{ color: theme.text }}>
+              From: {locations[0]?.LocationAddress || "No address"}
+            </Text>
+            <Text style={{ color: theme.text }}>
+              To: {locations[1]?.LocationAddress || "No address"}
+            </Text>
           </View>
         )}
       </View>
@@ -181,7 +186,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 5,
   },
-
 });
 
 export default ActivityForm;

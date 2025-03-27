@@ -1,6 +1,6 @@
 import { Alert, StyleSheet, Text, View, Image } from "react-native";
 import { Button, ButtonTray } from "../../UI/Button";
-import Icons from "../../UI/Icons.js";
+import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../context/themeContext.js";
 
 const ContactView = ({ contact, onDelete, onModify }) => {
@@ -43,7 +43,7 @@ const ContactView = ({ contact, onDelete, onModify }) => {
               style={styles.avatar}
             />
           ) : (
-            <Icons.User width={40} height={40} color="#122f76" />
+            <Ionicons name="person" size={40} color={theme.primary} />
           )}
         </View>
 
@@ -91,14 +91,14 @@ const ContactView = ({ contact, onDelete, onModify }) => {
 
       <ButtonTray style={styles.buttonTray}>
         <Button
-          icon={<Icons.Edit />}
+          icon={<Ionicons name="create-outline" size={16} color="white" />}
           label="Modify"
           onClick={onModify}
           styleButton={{ backgroundColor: theme.primary }}
           styleLabel={{ color: theme.buttonText }}
         />
         <Button
-          icon={<Icons.Delete />}
+          icon={<Ionicons name="trash-outline" size={16} color="white" />}
           label="Delete"
           styleButton={{ backgroundColor: theme.error }}
           styleLabel={{ color: theme.buttonText }}

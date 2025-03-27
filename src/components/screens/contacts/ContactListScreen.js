@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Button } from "../../UI/Button.js";
-import Icons from "../../UI/Icons.js";
 import ContactList from "../../entity/contacts/ContactList.js";
 import { useContacts } from "../../context/contactContext";
 import Screen from "../../layout/Screen.js";

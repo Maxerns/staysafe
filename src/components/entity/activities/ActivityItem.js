@@ -50,11 +50,8 @@ const ActivityItem = ({ activity, onSelect }) => {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return (
-      date.toLocaleDateString() +
-      " " +
-      date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    );
+    return date.toLocaleDateString() + " · " + 
+           date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   // View --------------------------------------------
@@ -68,42 +65,47 @@ const ActivityItem = ({ activity, onSelect }) => {
       ]}
     >
       <View style={styles.item}>
-        <View style={styles.header}>
-          <Text
-            style={[styles.title, { color: theme.primary }]}
-            numberOfLines={1}
+        {/* Badges row - both badges in one row */}
+        <View style={styles.badgesRow}>
+          <View
+            style={[
+              styles.statusBadge,
+              { backgroundColor: `${statusInfo.color}20` },
+            ]}
           >
-            {activity.ActivityName ||
-              activity.ActivityLabel ||
-              "Unnamed Activity"}
-          </Text>
-          
-          <View style={styles.headerRight}>
-            <View
-              style={[
-                styles.statusContainer,
-                { backgroundColor: `${statusInfo.color}20` },
-              ]}
-            >
-              <Ionicons
-                name={statusInfo.icon}
-                size={16}
-                color={statusInfo.color}
-              />
-              <Text style={[styles.statusText, { color: statusInfo.color }]}>
-                {statusInfo.text}
-              </Text>
-            </View>
-            
-            {isOwner && (
-              <View
-                style={[styles.ownerBadge, { backgroundColor: theme.primary }]}
-              >
-                <Text style={styles.ownerText}>Owner</Text>
-              </View>
-            )}
+            <Ionicons
+              name={statusInfo.icon}
+              size={16}
+              color={statusInfo.color}
+            />
+            <Text style={[styles.statusText, { color: statusInfo.color }]}>
+              {statusInfo.text}
+            </Text>
           </View>
+
+          {isOwner ? (
+            <View
+              style={[styles.ownerBadge, { backgroundColor: theme.primary }]}
+            >
+              <Text style={styles.ownerText}>You</Text>
+            </View>
+          ) : (
+            <View
+              style={[styles.userBadge, { backgroundColor: theme.info }]}
+            >
+              <Text style={styles.ownerText}>{activity.ActivityUsername}</Text>
+            </View>
+          )}
         </View>
+
+        <Text
+          style={[styles.title, { color: theme.primary }]}
+          numberOfLines={1}
+        >
+          {activity.ActivityName ||
+            activity.ActivityLabel ||
+            "Unnamed Activity"}
+        </Text>
 
         <Text
           style={[styles.description, { color: theme.text }]}
@@ -112,19 +114,24 @@ const ActivityItem = ({ activity, onSelect }) => {
           {activity.ActivityDescription || "No description provided"}
         </Text>
 
-        <View style={styles.datesSection}>
-          <View style={styles.dateContainer}>
-            <Ionicons name="arrow-forward-outline" size={16} color={theme.inactive} />
-            <Text style={[styles.dateLabel, { color: theme.inactive }]}>Departure:</Text>
-            <Text style={[styles.dateText, { color: theme.text }]}>{formatDate(activity.ActivityLeave)}</Text>
+        {/* Simplified date section */}
+        <View style={styles.datesContainer}>
+          <View style={styles.dateRow}>
+            <View style={styles.dateItem}>
+              <Ionicons name="time-outline" size={16} color={theme.inactive} />
+              <Text style={[styles.dateLabel, { color: theme.inactive }]}>Departure:</Text>
+              <Text style={[styles.dateText, { color: theme.text }]}>{formatDate(activity.ActivityLeave)}</Text>
+            </View>
           </View>
           
           <View style={[styles.divider, { backgroundColor: theme.border }]} />
           
-          <View style={styles.dateContainer}>
-            <Ionicons name="arrow-down-outline" size={16} color={theme.inactive} />
-            <Text style={[styles.dateLabel, { color: theme.inactive }]}>Arrival:</Text>
-            <Text style={[styles.dateText, { color: theme.text }]}>{formatDate(activity.ActivityArrive)}</Text>
+          <View style={styles.dateRow}>
+            <View style={styles.dateItem}>
+              <Ionicons name="flag-outline" size={16} color={theme.inactive} />
+              <Text style={[styles.dateLabel, { color: theme.inactive }]}>Arrival:</Text>
+              <Text style={[styles.dateText, { color: theme.text }]}>{formatDate(activity.ActivityArrive)}</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -134,8 +141,7 @@ const ActivityItem = ({ activity, onSelect }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 8,
-
+    marginVertical: 10,
     borderRadius: 12,
     elevation: 2,
     shadowColor: "#000",
@@ -151,27 +157,38 @@ const styles = StyleSheet.create({
   item: {
     padding: 16,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
+  badgesRow: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  headerRight: {
+  statusBadge: {
     flexDirection: "row",
     alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
+  },
+  statusText: {
+    fontSize: 13,
+    fontWeight: "bold",
+    marginLeft: 6,
   },
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    flex: 1,
-    marginRight: 8,
+    marginBottom: 10,
   },
   ownerBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    marginLeft: 8,
+  },
+  userBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   ownerText: {
     color: "white",
@@ -180,51 +197,32 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 14,
-    marginBottom: 12,
+    marginBottom: 14,
+    lineHeight: 20,
   },
-  datesSection: {
-    backgroundColor: theme => theme.backgroundAlt || '#f5f5f5',
-    borderRadius: 8,
-    padding: 8,
-    marginTop: 8,
-    marginBottom: 8,
+  datesContainer: {
+    marginTop: 4,
   },
-  dateContainer: {
+  dateRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     paddingVertical: 4,
   },
+  dateItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   dateLabel: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 'bold',
     marginLeft: 8,
-    width: 70,
+    marginRight: 4,
   },
   dateText: {
-    fontSize: 12,
-    marginLeft: 4,
+    fontSize: 13,
   },
   divider: {
     height: 1,
-    marginVertical: 6,
-  },
-  details: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  statusContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: "bold",
-    marginLeft: 4,
+    marginVertical: 8,
   },
 });
 

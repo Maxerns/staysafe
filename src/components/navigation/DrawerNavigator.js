@@ -94,6 +94,7 @@ const CustomDrawerContent = (props) => {
       <View style={[styles.signOutContainer, { borderTopColor: theme.border }]}>
         <Button
           label="Sign Out"
+          icon={<Ionicons name="log-out-outline" size={16} color="white" />}
           onClick={handleSignOut}
           styleButton={{ backgroundColor: theme.accent }}
           styleLabel={{ color: theme.buttonText }}

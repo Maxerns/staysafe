@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -17,7 +24,9 @@ const LocationCard = ({
 }) => {
   if (!point) {
     return (
-      <View style={[styles.card, styles.emptyCard, { backgroundColor: theme.card }]}>
+      <View
+        style={[styles.card, styles.emptyCard, { backgroundColor: theme.card }]}
+      >
         <View style={styles.cardHeader}>
           <View
             style={[
@@ -49,11 +58,7 @@ const LocationCard = ({
 
   const isPointA = pointIndex === 0;
   const isLivePoint = pointIndex === 2;
-  const badgeColor = isLivePoint
-    ? "#F44336"
-    : isPointA
-    ? "#2196F3"
-    : "#4CAF50";
+  const badgeColor = isLivePoint ? "#F44336" : isPointA ? "#2196F3" : "#4CAF50";
   const pointLabel = isLivePoint ? "Live" : pointIndex === 0 ? "From" : "To";
 
   return (
@@ -62,7 +67,10 @@ const LocationCard = ({
         <View style={[styles.pointBadge, { backgroundColor: badgeColor }]}>
           <Text style={styles.pointBadgeText}>{pointLabel}</Text>
         </View>
-        <Text style={[styles.cardTitle, { color: theme.primary }]} numberOfLines={1}>
+        <Text
+          style={[styles.cardTitle, { color: theme.primary }]}
+          numberOfLines={1}
+        >
           {point.LocationName || `Point ${pointLabel}`}
         </Text>
         {!isViewMode && !isLivePoint && (
@@ -77,7 +85,10 @@ const LocationCard = ({
 
       <View style={styles.addressContainer}>
         <Ionicons name="location-outline" size={16} color="#757575" />
-        <Text style={[styles.addressText, { color: theme.text }]} numberOfLines={2}>
+        <Text
+          style={[styles.addressText, { color: theme.text }]}
+          numberOfLines={2}
+        >
           {point.LocationAddress || "Address not available"}
         </Text>
       </View>
@@ -85,7 +96,9 @@ const LocationCard = ({
       {point.LocationPostcode && (
         <View style={styles.postcodeContainer}>
           <Ionicons name="mail-outline" size={16} color="#757575" />
-          <Text style={[styles.postcodeText, { color: theme.text }]}>{point.LocationPostcode}</Text>
+          <Text style={[styles.postcodeText, { color: theme.text }]}>
+            {point.LocationPostcode}
+          </Text>
         </View>
       )}
 
@@ -105,7 +118,11 @@ const LocationCard = ({
       {!isViewMode && !isLivePoint && (
         <View style={styles.inputContainer}>
           <TextInput
-            style={[styles.input, { color: theme.text }]}
+            style={[
+              styles.input,
+              { color: theme.text },
+              { backgroundColor: theme.inputBackground },
+            ]}
             placeholder="Title"
             placeholderTextColor="#9E9E9E"
             value={point.LocationName}
@@ -113,13 +130,19 @@ const LocationCard = ({
           />
 
           <TextInput
-            style={[styles.input, styles.descriptionInput, { color: theme.text }]}
+            style={[
+              styles.input,
+              { color: theme.text },
+              { backgroundColor: theme.inputBackground },
+            ]}
             placeholder="Description"
             placeholderTextColor="#9E9E9E"
             multiline
             numberOfLines={2}
             value={point.LocationDescription}
-            onChangeText={(text) => onEdit(pointIndex, "LocationDescription", text)}
+            onChangeText={(text) =>
+              onEdit(pointIndex, "LocationDescription", text)
+            }
           />
         </View>
       )}
@@ -275,7 +298,7 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     zIndex: 100,
-  }
+  },
 });
 
 export default LocationCard;

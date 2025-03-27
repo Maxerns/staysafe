@@ -304,6 +304,15 @@ const ActivityMapScreen = ({ navigation, route }) => {
     navigation.goBack();
   };
 
+  // Define canSave based on the conditions for saving locations
+  const canSave =
+    locationRef.current[0] &&
+    locationRef.current[1] &&
+    locationRef.current[0].LocationName &&
+    locationRef.current[0].LocationDescription &&
+    locationRef.current[1].LocationName &&
+    locationRef.current[1].LocationDescription;
+
   const focusMapOnPoint = (point) => {
     if (!point || !mapRef.current) return;
 

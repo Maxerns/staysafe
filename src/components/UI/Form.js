@@ -10,7 +10,7 @@ import {
 import React, { useState } from "react";
 import Checkbox from "expo-checkbox";
 import { ButtonTray, Button } from "../UI/Button.js";
-import Icons from "../UI/Icons.js";
+import { Ionicons } from "@expo/vector-icons";
 import { SelectList } from "react-native-dropdown-select-list";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
@@ -34,7 +34,7 @@ const Form = ({
       <ButtonTray style={!showCancelButton && styles.centerButtonTray}>
         <Button
           label={submitLabel}
-          icon={submitIcon}
+          icon={ <Ionicons name={"checkmark-outline"} size={20} color="#fff" /> }
           onClick={onSubmit}
           styleButton={{ backgroundColor: theme.primary }}
           styleLabel={{ color: theme.buttonText }}
@@ -42,7 +42,7 @@ const Form = ({
         {showCancelButton && (
           <Button
             label="Cancel"
-            icon={<Icons.Close />}
+            icon={<Ionicons name="close-outline" size={20} color="#555" />}
             onClick={onCancel}
             styleButton={{ backgroundColor: theme.border }}
             
@@ -68,7 +68,7 @@ const InputText = ({ label, value, onChange, icon, style, disabled, editable, ..
             styles.itemInput,
             { color: theme.text },
             icon && styles.inputWithIcon,
-            { backgroundColor: disabled ? "#ddd" : theme.inputBackground }
+            { backgroundColor: disabled ? theme.inactive : theme.inputBackground }
           ]}
           placeholderTextColor="#999"
           {...rest}
@@ -138,7 +138,9 @@ const InputPassword = ({ label, value, onChange, icon, style }) => {
           style={styles.passwordToggle}
           onPress={() => setShowPassword(!showPassword)}
         >
-          {showPassword ? <Icons.EyeOff /> : <Icons.Eye />}
+          {showPassword ? 
+            <Ionicons name="eye-off-outline" size={20} color="#555" /> : 
+            <Ionicons name="eye-outline" size={20} color="#555" />}
         </TouchableOpacity>
       </View>
     </View>

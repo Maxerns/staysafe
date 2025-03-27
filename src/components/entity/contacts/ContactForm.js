@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
-import Icons from "../../UI/Icons.js";
+import { Ionicons } from "@expo/vector-icons";
 import Form from "../../UI/Form.js";
 import { contactService } from "../../services/contactService.js";
 
@@ -118,7 +118,9 @@ const ContactForm = ({
 
   // View --------------------------------------------
   const submitLabel = initialContact ? "Update Contact" : "Add Contact";
-  const submitIcon = initialContact ? <Icons.Edit /> : <Icons.Add />;
+  const submitIcon = initialContact ? 
+    <Ionicons name="create-outline" size={16} color="white" /> : 
+    <Ionicons name="add-outline" size={16} color="white" />;
 
   return (
     <Form
