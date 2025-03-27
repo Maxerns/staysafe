@@ -1,13 +1,20 @@
 import { useState } from "react";
-import { Text, StyleSheet, View, ActivityIndicator, Alert } from "react-native";
-import { ButtonTray, Button } from "../../UI/Button.js";
-import Icons from "../../UI/Icons.js";
+import {
+  Text,
+  StyleSheet,
+  View,
+  ActivityIndicator,
+  Alert,
+  TouchableOpacity,
+} from "react-native";
+import { Button } from "../../UI/Button.js";
 import ContactList from "../../entity/contacts/ContactList.js";
 import { useContacts } from "../../context/contactContext";
 import Screen from "../../layout/Screen.js";
 import { useContext } from "react";
 import { AuthContext } from "../../context/authContext.js";
 import { useTheme } from "../../context/themeContext";
+import { Ionicons } from "@expo/vector-icons";
 
 const ContactListScreen = ({ navigation }) => {
   // Initialisations ---------------------------------
@@ -28,11 +35,11 @@ const ContactListScreen = ({ navigation }) => {
   const onDelete = async (contactId) => {
     try {
       await deleteContact(contactId);
-      navigation.goBack();
     } catch (err) {
       console.error("Error deleting contact:", err);
       Alert.alert("Error", `Failed to delete contact: ${err.message}`);
     }
+    navigation.goBack();
   };
 
   const onAdd = async (contactData) => {
@@ -64,7 +71,6 @@ const ContactListScreen = ({ navigation }) => {
       }
 
       await updateContact(contactData.ContactID, contactData);
-      navigation.goBack();
     } catch (err) {
       console.error("Error updating contact:", err);
       Alert.alert("Error", `Failed to update contact: ${err.message}`);
@@ -83,67 +89,59 @@ const ContactListScreen = ({ navigation }) => {
 
   // View --------------------------------------------
   return (
-    <Screen style={[styles.screen, { backgroundColor: theme.background }]}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.primary }]}>Contacts</Text>
-        <Text style={[styles.subtitle, { color: theme.inactive }]}>
-          Manage your StaySafe contacts
-        </Text>
-      </View>
-
-      <View style={[styles.contentContainer, { backgroundColor: theme.card }]}>
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={theme.primary} />
-            <Text style={[styles.loadingText, { color: theme.text }]}>
-              Loading contacts...
-            </Text>
-          </View>
-        ) : error ? (
-          <View style={styles.errorContainer}>
-            <Text style={[styles.errorText, { color: theme.error }]}>
-              Error: {error}
-            </Text>
-            <Button
-              label="Retry"
-              onClick={refreshContacts}
-              styleButton={styles.retryButton}
-              styleLabel={styles.retryButtonText}
-            />
-          </View>
-        ) : contacts.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={[styles.emptyText, { color: theme.text }]}>
-              No contacts found
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.listContainer}>
-            <ContactList contacts={contacts} onSelect={goToViewScreen} />
-          </View>
-        )}
-      </View>
-
-      <ButtonTray style={styles.buttonTray}>
-        <Button
-          label="Add New Contact"
-          icon={<Icons.Add />}
-          onClick={goToAddScreen}
-          styleButton={[
-            styles.addButton,
-            { backgroundColor: theme.primary, borderColor: theme.primary },
-          ]}
-          styleLabel={styles.addButtonText}
-        />
-      </ButtonTray>
+    <Screen>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.primary} />
+          <Text style={[styles.loadingText, { color: theme.text }]}>
+            Loading contacts...
+          </Text>
+        </View>
+      ) : error ? (
+        <View style={styles.errorContainer}>
+          <Text style={[styles.errorText, { color: theme.error }]}>
+            Error: {error}
+          </Text>
+          <Button
+            label="Retry"
+            onClick={refreshContacts}
+            styleButton={styles.retryButton}
+            styleLabel={styles.retryButtonText}
+          />
+        </View>
+      ) : contacts.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={[styles.emptyText, { color: theme.text }]}>
+            No contacts found
+          </Text>
+          <Text style={styles.emptySubtext}>
+            Add contacts to keep track of your connections
+          </Text>
+          <TouchableOpacity
+            style={styles.emptyAddButton}
+            onPress={goToAddScreen}
+          >
+            <Ionicons name="add" size={20} color="white" />
+            <Text style={styles.emptyAddButtonText}>Add First Contact</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.listContainer}>
+          <ContactList contacts={contacts} onSelect={goToViewScreen} />
+        </View>
+      )}
+      {/* FAB Button */}
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: theme?.primary || "#122f76" }]}
+        onPress={goToAddScreen}
+      >
+        <Ionicons name="add" size={30} color="white" />
+      </TouchableOpacity>
     </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  screen: {
-    padding: 20,
-  },
   header: {
     marginBottom: 30,
     alignItems: "center",
@@ -195,6 +193,34 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   emptyText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#555",
+    marginTop: 20,
+  },
+  emptySubtext: {
+    fontSize: 16,
+    color: "#888",
+    marginTop: 10,
+    textAlign: "center",
+    lineHeight: 24,
+  },
+  emptyAddButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#ff3b3b",
+    paddingVertical: 14,
+    paddingHorizontal: 25,
+    borderRadius: 30,
+    marginTop: 30,
+  },
+  emptyAddButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  emptyText: {
     fontSize: 18,
     marginBottom: 20,
     textAlign: "center",
@@ -202,13 +228,22 @@ const styles = StyleSheet.create({
   listContainer: {
     flex: 1,
   },
-  buttonTray: {
-    marginTop: 20,
+  // Removed or ignore old buttonTray, addButton, addButtonText styles
+  fab: {
+    position: "absolute",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    right: 20,
+    bottom: 30,
     justifyContent: "center",
-  },
-  addButtonText: {
-    color: "white",
-    fontWeight: "600",
+    alignItems: "center",
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 999,
   },
   retryButton: {
     backgroundColor: "#ff3b3b",

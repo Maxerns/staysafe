@@ -1,9 +1,11 @@
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, View, Image } from "react-native";
 import { Button, ButtonTray } from "../../UI/Button";
-import Icons from "../../UI/Icons.js";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../context/themeContext.js";
 
 const ContactView = ({ contact, onDelete, onModify }) => {
   // Initialisations ---------------------------------
+  const { theme } = useTheme();
   // State -------------------------------------------
   // Handlers ----------------------------------------
   const handleDelete = () => onDelete(contact);
@@ -32,74 +34,74 @@ const ContactView = ({ contact, onDelete, onModify }) => {
 
   // View --------------------------------------------
   return (
-    <View style={styles.container}>
-      {/* Contact Info Section */}
-      <View style={styles.infoSection}>
+    <View style={[styles.container, { backgroundColor: theme.card }]}>
+      <View>
         <View style={styles.avatarContainer}>
-          <Icons.User width={40} height={40} color="#122f76" />
+          {contact.userDetails && contact.userDetails.UserImageURL ? (
+            <Image
+              source={{ uri: contact.userDetails.UserImageURL }}
+              style={styles.avatar}
+            />
+          ) : (
+            <Ionicons name="person" size={40} color={theme.primary} />
+          )}
         </View>
 
-        <View style={styles.contactInfoCard}>
-          <Text style={styles.contactLabel}>{contact.ContactLabel}</Text>
+        <Text style={[styles.contactLabel, { color: theme.primary }]}>{contact.ContactLabel}</Text>
 
-          <View style={styles.infoRow}>
-            <View style={styles.iconWrapper}>
-              <Icons.User width={18} height={18} color="#555" />
-            </View>
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Contact ID</Text>
-              <Text style={styles.infoValue}>{contact.ContactID}</Text>
-            </View>
-          </View>
-
-          <View style={styles.infoRow}>
-            <View style={styles.iconWrapper}>
-              <Icons.User width={18} height={18} color="#555" />
-            </View>
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>User ID</Text>
-              <Text style={styles.infoValue}>{contact.ContactUserID}</Text>
-            </View>
-          </View>
-
-          <View style={styles.infoRow}>
-            <View style={styles.iconWrapper}>
-              <Icons.User width={18} height={18} color="#555" />
-            </View>
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Contact Reference ID</Text>
-              <Text style={styles.infoValue}>{contact.ContactContactID}</Text>
-            </View>
-          </View>
-
-          <View style={styles.infoRow}>
-            <View style={styles.iconWrapper}>
-              <Icons.User width={18} height={18} color="#555" />
-            </View>
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Created</Text>
-              <Text style={styles.infoValue}>
-                {formatDate(contact.ContactDatecreated)}
+        {contact.userDetails ? (
+          <>
+            <View style={styles.infoRow}>
+              <Text style={[styles.infoLabel, { color: theme.text }]}>Username: </Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>
+                {contact.userDetails.UserUsername}
               </Text>
             </View>
+            <View style={styles.infoRow}>
+              <Text style={[styles.infoLabel, { color: theme.text }]}>First Name: </Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>
+                {contact.userDetails.UserFirstname}
+              </Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={[styles.infoLabel, { color: theme.text }]}>Last Name: </Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>
+                {contact.userDetails.UserLastname}
+              </Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={[styles.infoLabel, { color: theme.text }]}>Phone: </Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>
+                {contact.userDetails.UserPhone}
+              </Text>
+            </View>
+          </>
+        ) : (
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoValue, { color: theme.text }]}>User details not available</Text>
           </View>
+        )}
+        <View style={styles.infoRow}>
+          <Text style={[styles.infoLabel, { color: theme.text }]}>Created: </Text>
+          <Text style={[styles.infoValue, { color: theme.text }]}>
+            {formatDate(contact.ContactDatecreated)}
+          </Text>
         </View>
       </View>
 
-      {/* Actions Section */}
       <ButtonTray style={styles.buttonTray}>
         <Button
-          icon={<Icons.Edit />}
+          icon={<Ionicons name="create-outline" size={16} color="white" />}
           label="Modify"
           onClick={onModify}
-          styleButton={styles.modifyButton}
-          styleLabel={styles.modifyButtonText}
+          styleButton={{ backgroundColor: theme.primary }}
+          styleLabel={{ color: theme.buttonText }}
         />
         <Button
-          icon={<Icons.Delete />}
+          icon={<Ionicons name="trash-outline" size={16} color="white" />}
           label="Delete"
-          styleButton={styles.deleteButton}
-          styleLabel={styles.deleteButtonText}
+          styleButton={{ backgroundColor: theme.error }}
+          styleLabel={{ color: theme.buttonText }}
           onClick={requestDelete}
         />
       </ButtonTray>
@@ -109,17 +111,16 @@ const ContactView = ({ contact, onDelete, onModify }) => {
 
 const styles = StyleSheet.create({
   container: {
+    borderRadius: 12,
     gap: 25,
-  },
-  infoSection: {
-    gap: 20,
+    backgroundColor: "white",
+    padding: 16,
   },
   avatarContainer: {
     alignSelf: "center",
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#e8ebf2",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 10,
@@ -129,65 +130,32 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
-  contactInfoCard: {
-    backgroundColor: "#f8f9fa",
-    borderRadius: 8,
-    padding: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
   },
   contactLabel: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#122f76",
     textAlign: "center",
     marginBottom: 20,
   },
   infoRow: {
     flexDirection: "row",
     marginBottom: 15,
-    alignItems: "flex-start",
-  },
-  iconWrapper: {
-    width: 30,
-    justifyContent: "flex-start",
     alignItems: "center",
-    marginTop: 2,
   },
   infoContent: {
     flex: 1,
   },
   infoLabel: {
     fontSize: 14,
-    color: "#777",
-    marginBottom: 2,
+    marginRight: 5,
   },
   infoValue: {
     fontSize: 16,
-    color: "#333",
     fontWeight: "500",
-  },
-  buttonTray: {
-    marginTop: 10,
-  },
-  modifyButton: {
-    backgroundColor: "#122f76",
-    borderColor: "#122f76",
-  },
-  modifyButtonText: {
-    color: "white",
-    fontWeight: "600",
-  },
-  deleteButton: {
-    backgroundColor: "#fff0f0",
-    borderColor: "#ffcccb",
-  },
-  deleteButtonText: {
-    color: "#ff3b3b",
-    fontWeight: "600",
   },
 });
 

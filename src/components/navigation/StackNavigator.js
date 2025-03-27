@@ -13,15 +13,14 @@ import { useTheme } from "../context/themeContext";
 import ContactAddScreen from "../screens/contacts/ContactAddScreen";
 import ContactViewScreen from "../screens/contacts/ContactViewScreen";
 import ContactModifyScreen from "../screens/contacts/ContactModifyScreen";
+import { Image } from "react-native";
 
 const Stack = createNativeStackNavigator();
-
 
 const StackNavigator = () => {
   const { isSignedIn, isLoading } = useContext(AuthContext);
   const { theme } = useTheme();
 
-  
   const screenOptions = {
     headerStyle: {
       backgroundColor: theme.headerBackground,
@@ -34,14 +33,18 @@ const StackNavigator = () => {
     headerTintColor: theme.headerText,
     headerShadowVisible: true,
     animation: "slide_from_right",
-    contentStyle: {
-      backgroundColor: theme.background,
-    },
+    
     // Back button settings
     headerBackTitleVisible: false,
     headerLeftContainerStyle: {
       paddingLeft: 5,
     },
+    headerRight: () => (
+      <Image
+        source={require("../../../assets/StaySafeVector.png")}
+        style={{ width: 35, height: 35, tintColor: theme.headerText }}
+      />
+    ),
   };
 
   const AuthStack = () => (
@@ -70,7 +73,7 @@ const StackNavigator = () => {
       <Stack.Screen
         name="Drawer"
         component={DrawerNavigator}
-        options={{ headerShown: false }}
+        options={{ headerShown: false}}
       />
 
       {/* Activity Screens */}
@@ -80,14 +83,13 @@ const StackNavigator = () => {
         options={{
           title: "Add Activity",
           animation: "slide_from_bottom",
+          headerBackTitle: "Back",
         }}
       />
       <Stack.Screen
         name="ActivityViewScreen"
         component={ActivityViewScreen}
-        options={{
-          title: "Activity Details",
-        }}
+        options={{ title: "Activity Details", headerBackTitle: "Back", }}
       />
       <Stack.Screen
         name="ActivityModifyScreen"
@@ -112,14 +114,13 @@ const StackNavigator = () => {
         options={{
           title: "Add Contact",
           animation: "slide_from_bottom",
+          headerBackTitle: "Back"
         }}
       />
       <Stack.Screen
         name="ContactViewScreen"
         component={ContactViewScreen}
-        options={{
-          title: "Contact Details",
-        }}
+        options={{ title: "Contact Details", headerBackTitle: "Back" }}
       />
       <Stack.Screen
         name="ContactModifyScreen"

@@ -1,6 +1,6 @@
 import { Text } from "react-native";
-import Icons from "./Icons";
 import Selector from "./Selector";
+import { Ionicons } from "@expo/vector-icons";
 
 const Favourite = ({ isFavorite, onSelect, style }) => {
   // Initialisations ---------------------------------
@@ -9,7 +9,11 @@ const Favourite = ({ isFavorite, onSelect, style }) => {
   // View --------------------------------------------
   return (
     <Selector onPress={onSelect} style={style}>
-      <Text> {isFavorite ? <Icons.Favourite /> : <Icons.NotFavourite />} </Text>
+      <Text> 
+        {isFavorite ? 
+          <Ionicons name="heart" size={20} color="crimson" /> : 
+          <Ionicons name="heart-outline" size={20} color="grey" />} 
+      </Text>
     </Selector>
   );
 };

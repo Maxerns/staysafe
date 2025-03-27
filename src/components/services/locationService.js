@@ -70,15 +70,29 @@ export const locationService = {
       // Debug the response
       console.log(`User location API response:`, response.data);
       
-      // Check if the user has valid location data
-      const latitude = parseFloat(response.data.UserLatitude);
-      const longitude = parseFloat(response.data.UserLongitude);
-      const timestamp = response.data.UserTimestamp ? parseInt(response.data.UserTimestamp) : Date.now();
+      // Handle case where response.data is an array instead of a single object
+      const userData = Array.isArray(response.data) ? response.data[0] : response.data;
       
-      // Validate coordinates
-      if (isNaN(latitude) || isNaN(longitude) || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
+      if (!userData) {
+        throw new Error(`No user data found for ID ${userId}`);
+      }
+      
+      // Check if the user has valid location data
+      // Note: 0,0 coordinates are considered valid (Gulf of Guinea)
+      const latitude = parseFloat(userData.UserLatitude);
+      const longitude = parseFloat(userData.UserLongitude);
+      const timestamp = userData.UserTimestamp ? parseInt(userData.UserTimestamp) : Date.now();
+      
+      // Only validate that the coordinates are actual numbers
+      if (isNaN(latitude) || isNaN(longitude)) {
         console.log(`Invalid coordinates for user ${userId}: lat=${latitude}, lng=${longitude}`);
         throw new Error("User has no valid location data");
+      }
+      
+      // Check if the user has updated their location or if this is default data
+      if (latitude === 0 && longitude === 0 && userData.UserTimestamp === 0) {
+        console.log(`User ${userId} has default location coordinates (0,0)`);
+        throw new Error("User has not updated their location yet");
       }
       
       return {

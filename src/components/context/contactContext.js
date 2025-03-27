@@ -36,33 +36,8 @@ export const ContactProvider = ({ children }) => {
         setLoading(false);
         return;
       }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Get user ID consistently
-        const userId = user?.info?.id;
-        console.log("Fetching contacts for user ID:", userId);
-
-        if (!userId) {
-          console.warn("User ID is undefined or null");
-          setContacts([]);
-          return;
-        }
-
-        // Fetch contacts for the current user
-        const userContacts = await contactService.getUserContacts(userId);
-        setContacts(userContacts || []);
-      } catch (err) {
-        console.error("Error fetching contacts:", err);
-        setError(err.message || "Failed to fetch contacts");
-        setContacts([]);
-      } finally {
-        setLoading(false);
-      }
+      await refreshContacts();
     };
-
     fetchContacts();
   }, [user?.info?.id, isSignedIn]);
 
@@ -165,15 +140,35 @@ export const ContactProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-
       const userId = user?.info?.id;
-      if (!userId) return;
-
+      if (!userId) {
+        setContacts([]);
+        return;
+      }
+      // Fetch contacts for the current user
       const userContacts = await contactService.getUserContacts(userId);
-      setContacts(userContacts || []);
+      // Get unique ContactContactID values
+      const contactIds = [
+        ...new Set(userContacts.map((contact) => contact.ContactContactID))
+      ];
+      // Fetch details for each contact using Promise.all
+      const userDetailsMap = {};
+      await Promise.all(
+        contactIds.map(async (id) => {
+          const details = await contactService.getUserById(id);
+          userDetailsMap[id] = details;
+        })
+      );
+      // Attach the fetched user details to every contact
+      const joinedContacts = userContacts.map((contact) => ({
+        ...contact,
+        userDetails: userDetailsMap[contact.ContactContactID] || null,
+      }));
+      setContacts(joinedContacts);
     } catch (err) {
       setError(err.message || "Failed to refresh contacts");
       console.error("Error refreshing contacts:", err);
+      setContacts([]);
     } finally {
       setLoading(false);
     }
@@ -186,17 +181,34 @@ export const ContactProvider = ({ children }) => {
       );
 
       // First try to get the user's location from the API
-      const response = await locationService.getUserLocation(contactId);
-      console.log(`Received location data:`, response);
-
-      if (response && response.latitude && response.longitude) {
-        return response;
+      try {
+        const response = await locationService.getUserLocation(contactId);
+        console.log(`Received location data:`, response);
+        
+        if (response && !isNaN(response.latitude) && !isNaN(response.longitude)) {
+          return response;
+        }
+      } catch (err) {
+        console.error(`API location fetch failed: ${err.message}`);
+        // Continue to fallback instead of throwing
       }
 
-      // If API doesn't have location data, try to get positions from the activity
-      console.log(
-        `No live location found in user data, trying to fetch latest position`
-      );
+      // If API doesn't have location data or returned invalid data, use fallback
+      console.log(`No valid location found, using fallback`);
+      
+      // Fallback to simulated location if in development
+      if (__DEV__) {
+        console.log("Using fallback development location data");
+        // Generate a location near London for testing
+        const fallbackLocation = {
+          latitude: 51.5074 + Math.random() * 0.01,
+          longitude: -0.1278 + Math.random() * 0.01,
+          timestamp: Date.now(),
+        };
+        console.log("Live location from API:", fallbackLocation);
+        return fallbackLocation;
+      }
+      
       throw new Error("User location not available");
     } catch (error) {
       console.error(
@@ -204,7 +216,7 @@ export const ContactProvider = ({ children }) => {
         error
       );
 
-      // Fallback to simulated location if in development
+      // Still provide fallback location data even on error in development
       if (__DEV__) {
         console.log("Using fallback development location data");
         // Generate a location near London for testing

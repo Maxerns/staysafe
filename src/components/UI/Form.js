@@ -10,11 +10,12 @@ import {
 import React, { useState } from "react";
 import Checkbox from "expo-checkbox";
 import { ButtonTray, Button } from "../UI/Button.js";
-import Icons from "../UI/Icons.js";
+import { Ionicons } from "@expo/vector-icons";
 import { SelectList } from "react-native-dropdown-select-list";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { TouchableOpacity } from "react-native";
+import { useTheme } from "../context/themeContext";
 
 const Form = ({
   children,
@@ -22,35 +23,29 @@ const Form = ({
   onCancel,
   submitLabel,
   submitIcon,
-  buttonStyle,
-  buttonTextStyle,
-  cancelButtonStyle,
-  cancelTextStyle,
   showCancelButton = true,
 }) => {
+  const { theme } = useTheme();
   return (
-    <KeyboardAvoidingView style={styles.formContainer}>
+    <KeyboardAvoidingView style={[styles.formContainer, { backgroundColor: theme.card }]}>
       <ScrollView contentContainerStyle={styles.formItems}>
         {children}
       </ScrollView>
       <ButtonTray style={!showCancelButton && styles.centerButtonTray}>
         <Button
           label={submitLabel}
-          icon={submitIcon}
+          icon={ <Ionicons name={"checkmark-outline"} size={20} color="#fff" /> }
           onClick={onSubmit}
-          styleButton={[
-            !showCancelButton && styles.fullWidthButton,
-            buttonStyle,
-          ]}
-          styleLabel={buttonTextStyle}
+          styleButton={{ backgroundColor: theme.primary }}
+          styleLabel={{ color: theme.buttonText }}
         />
         {showCancelButton && (
           <Button
             label="Cancel"
-            icon={<Icons.Close />}
+            icon={<Ionicons name="close-outline" size={20} color="#555" />}
             onClick={onCancel}
-            styleButton={cancelButtonStyle || styles.cancelButton}
-            styleLabel={cancelTextStyle || styles.cancelButtonText}
+            styleButton={{ backgroundColor: theme.border }}
+            
           />
         )}
       </ButtonTray>
@@ -58,7 +53,8 @@ const Form = ({
   );
 };
 
-const InputText = ({ label, value, onChange, icon, style }) => {
+const InputText = ({ label, value, onChange, icon, style, disabled, editable, ...rest }) => {
+  const { theme } = useTheme();
   return (
     <View style={[styles.item, style]}>
       <Text style={styles.itemLabel}>{label}</Text>
@@ -67,8 +63,15 @@ const InputText = ({ label, value, onChange, icon, style }) => {
         <TextInput
           value={value}
           onChangeText={onChange}
-          style={[styles.itemInput, icon && styles.inputWithIcon]}
+          editable={disabled ? false : (editable !== undefined ? editable : true)}
+          style={[
+            styles.itemInput,
+            { color: theme.text },
+            icon && styles.inputWithIcon,
+            { backgroundColor: disabled ? theme.inactive : theme.inputBackground }
+          ]}
           placeholderTextColor="#999"
+          {...rest}
         />
       </View>
     </View>
@@ -83,6 +86,7 @@ const InputSelect = ({
   onChange,
   isLoading = false,
 }) => {
+  const { theme } = useTheme();
   const selectListData = options.map((option) => ({
     key: option.value,
     value: option.label,
@@ -101,7 +105,7 @@ const InputSelect = ({
           data={selectListData}
           placeholder={prompt}
           defaultOption={selectListData.find((item) => item.key === value)}
-          boxStyles={styles.selectListBoxStyle}
+          boxStyles={{ ...styles.selectListBoxStyle, backgroundColor: theme.inputBackground }}
           dropdownStyles={styles.selectListDropdownStyle}
         />
       )}
@@ -110,6 +114,7 @@ const InputSelect = ({
 };
 
 const InputPassword = ({ label, value, onChange, icon, style }) => {
+  const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -120,7 +125,12 @@ const InputPassword = ({ label, value, onChange, icon, style }) => {
         <TextInput
           value={value}
           onChangeText={onChange}
-          style={[styles.itemInput, icon && styles.inputWithIcon]}
+          style={[
+            styles.itemInput,
+            { color: theme.text },
+            icon && styles.inputWithIcon,
+            { backgroundColor: theme.inputBackground }
+          ]}
           secureTextEntry={!showPassword}
           placeholderTextColor="#999"
         />
@@ -128,7 +138,9 @@ const InputPassword = ({ label, value, onChange, icon, style }) => {
           style={styles.passwordToggle}
           onPress={() => setShowPassword(!showPassword)}
         >
-          {showPassword ? <Icons.EyeOff /> : <Icons.Eye />}
+          {showPassword ? 
+            <Ionicons name="eye-off-outline" size={20} color="#555" /> : 
+            <Ionicons name="eye-outline" size={20} color="#555" />}
         </TouchableOpacity>
       </View>
     </View>
@@ -145,6 +157,7 @@ const InputCheckbox = ({ label, value, onChange }) => {
 };
 
 const InputDate = ({ label, value, onChange }) => {
+  const { theme } = useTheme();
   // For Android, use the imperative API chaining date then time pickers.
   if (Platform.OS === "android") {
     const openAndroidPicker = () => {
@@ -183,8 +196,11 @@ const InputDate = ({ label, value, onChange }) => {
     return (
       <View style={styles.item}>
         <Text style={styles.itemLabel}>{label}</Text>
-        <TouchableOpacity onPress={openAndroidPicker} style={styles.itemInput}>
-          <Text>
+        <TouchableOpacity
+          onPress={openAndroidPicker}
+          style={[styles.itemInput, { backgroundColor: theme.inputBackground }]}
+        >
+          <Text style={{ color: theme.text }}>
             {value ? new Date(value).toLocaleString() : "Select Date & Time"}
           </Text>
         </TouchableOpacity>
@@ -226,6 +242,13 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     gap: 25,
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   item: {
     flex: 1,

@@ -1,19 +1,36 @@
 import { StyleSheet, Text, View } from "react-native";
 import Selector from "./Selector";
+import { useTheme } from "../context/themeContext";
 
-export const Button = ({ label, icon, onClick, styleLabel, styleButton }) => {
+export const Button = ({ label, icon, onClick, styleLabel, styleButton, disabled }) => {
   // Initialisations ---------------------------------
+  const { theme } = useTheme();
   // State -------------------------------------------
   // Handlers ----------------------------------------
   // View --------------------------------------------
+  
+  // Determine text color based on button background
+  // If using primary background, use buttonText color
+  const isPrimaryButton = styleButton && (
+    styleButton.backgroundColor === theme.primary || 
+    styleButton.backgroundColor === theme.accent ||
+    styleButton.backgroundColor === theme.error ||
+    styleButton.backgroundColor === theme.info ||
+    styleButton.backgroundColor === theme.success ||
+    styleButton.backgroundColor === theme.warning
+  );
+  
+  const textColor = isPrimaryButton ? theme.buttonText : theme.text;
+  
   return (
     <Selector
       onPress={onClick}
-      style={[styles.button, styleButton]}
+      style={[styles.button, styleButton, disabled && styles.disabledButton]}
       pressedStyle={[styles.pressedButton, styleButton && { opacity: 0.85 }]}
+      disabled={disabled}
     >
       {icon ? <View style={styles.iconContainer}>{icon}</View> : null}
-      <Text style={[styles.label, styleLabel]}>{label}</Text>
+      <Text style={[styles.label, { color: textColor }, styleLabel]}>{label}</Text>
     </Selector>
   );
 };
@@ -62,5 +79,8 @@ const styles = StyleSheet.create({
   pressedButton: {
     backgroundColor: "#f8f9fa",
     elevation: 1,
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
 });

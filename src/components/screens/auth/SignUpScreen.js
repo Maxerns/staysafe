@@ -7,9 +7,9 @@ import {
   Image,
   ScrollView,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import Screen from "../../layout/Screen";
 import Form from "../../UI/Form";
-import Icons from "../../UI/Icons";
 import { AuthContext } from "../../context/authContext";
 
 const SignUpScreen = ({ navigation }) => {
@@ -73,7 +73,7 @@ const SignUpScreen = ({ navigation }) => {
 
   // View --------------------------------------------
   return (
-    <Screen style={styles.screen}>
+    <Screen>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <KeyboardAvoidingView behavior="padding" style={styles.container}>
           <View style={styles.logoContainer}>
@@ -90,13 +90,11 @@ const SignUpScreen = ({ navigation }) => {
               Join StaySafe and stay protected
             </Text>
           </View>
-
-          <View style={styles.formWrapper}>
             <Form
               onSubmit={handleSignUp}
               onCancel={goToSignIn}
               submitLabel={isLoading ? "Creating account..." : "Sign Up"}
-              submitIcon={<Icons.Submit color="white" />}
+              submitIcon={<Ionicons name="checkmark-circle-outline" size={20} color="white" />}
               buttonStyle={styles.submitButton}
               buttonTextStyle={styles.submitButtonText}
               cancelButtonStyle={styles.cancelButton}
@@ -106,47 +104,46 @@ const SignUpScreen = ({ navigation }) => {
                 label="First Name"
                 value={firstName}
                 onChange={setFirstName}
-                icon={<Icons.User />}
+                icon={<Ionicons name="person-outline" size={20} color="#555" />}
                 style={styles.inputField}
               />
               <Form.InputText
                 label="Last Name"
                 value={lastName}
                 onChange={setLastName}
-                icon={<Icons.User />}
+                icon={<Ionicons name="person-outline" size={20} color="#555" />}
                 style={styles.inputField}
               />
               <Form.InputText
                 label="Phone Number"
                 value={phone}
                 onChange={setPhone}
-                icon={<Icons.Phone />}
+                icon={<Ionicons name="call-outline" size={20} color="#555" />}
                 style={styles.inputField}
               />
               <Form.InputText
                 label="Username"
                 value={username}
                 onChange={setUsername}
-                icon={<Icons.User />}
+                icon={<Ionicons name="person-outline" size={20} color="#555" />}
                 style={styles.inputField}
               />
               <Form.InputPassword
                 label="Password"
                 value={password}
                 onChange={setPassword}
-                icon={<Icons.Lock />}
+                icon={<Ionicons name="lock-closed-outline" size={20} color="#555" />}
                 style={styles.inputField}
               />
               <Form.InputPassword
                 label="Confirm Password"
                 value={confirmPassword}
                 onChange={setConfirmPassword}
-                icon={<Icons.Lock />}
+                icon={<Ionicons name="lock-closed-outline" size={20} color="#555" />}
                 style={styles.inputField}
               />
               {error ? <Text style={styles.errorText}>{error}</Text> : null}
             </Form>
-          </View>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Already have an account? </Text>
