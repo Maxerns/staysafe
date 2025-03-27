@@ -111,6 +111,19 @@ export const contactService = {
       return [];
     }
   },
+
+  // Get user by ID
+  getUserById: async (userId) => {
+    try {
+      const response = await apiClient.get(`/users/${userId}`);
+      // If response data is an array, use the first element
+      const userData = Array.isArray(response.data) ? response.data[0] : response.data;
+      return userData;
+    } catch (error) {
+      console.error(`Error fetching user by ID ${userId}:`, error);
+      return null;
+    }
+  },
 };
 
 export default contactService;

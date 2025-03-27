@@ -73,7 +73,7 @@ const SignUpScreen = ({ navigation }) => {
 
   // View --------------------------------------------
   return (
-    <Screen style={styles.screen}>
+    <Screen>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <KeyboardAvoidingView behavior="padding" style={styles.container}>
           <View style={styles.logoContainer}>
@@ -90,8 +90,6 @@ const SignUpScreen = ({ navigation }) => {
               Join StaySafe and stay protected
             </Text>
           </View>
-
-          <View style={styles.formWrapper}>
             <Form
               onSubmit={handleSignUp}
               onCancel={goToSignIn}
@@ -146,7 +144,6 @@ const SignUpScreen = ({ navigation }) => {
               />
               {error ? <Text style={styles.errorText}>{error}</Text> : null}
             </Form>
-          </View>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Already have an account? </Text>

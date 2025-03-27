@@ -55,11 +55,6 @@ const ActivityListScreen = ({ navigation }) => {
     try {
       // First update the activity
       await updateActivity(activityData.ActivityID, activityData);
-      
-      // Allow time for state updates to complete before navigation
-      setTimeout(() => {
-        navigation.goBack();
-      }, 100);
     } catch (err) {
       console.error("Error updating activity:", err);
     }

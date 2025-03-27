@@ -131,6 +131,7 @@ const ContactForm = ({
         label="Username"
         value={username}
         onChange={handleUsernameChange}
+        disabled={!!initialContact} // disable if editing
       />
 
       {usernameError && (

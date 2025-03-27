@@ -9,7 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 const ActivityViewScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
-  const { activity, onDelete, onModify } = route.params;
+  const { activity, onDelete } = route.params; // Removed onModify from here
   const {
     startLiveLocationTracking,
     stopLiveLocationTracking,
@@ -27,8 +27,13 @@ const ActivityViewScreen = ({ navigation, route }) => {
   const [isLoadingLocations, setIsLoadingLocations] = useState(true);
 
   // Handlers ----------------------------------------
+
+  const handleModify = (modifiedActivity) => {
+    setCurrentActivity(modifiedActivity);
+  };
+  
   const goToModifyScreen = () =>
-    navigation.navigate("ActivityModifyScreen", { activity: currentActivity, onModify });
+    navigation.navigate("ActivityModifyScreen", { activity: currentActivity, onModify: handleModify });
 
   const handleStatusChange = async (newStatusId) => {
     try {

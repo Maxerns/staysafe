@@ -61,37 +61,35 @@ const SignInScreen = ({ navigation }) => {
           <Text style={styles.subtitle}>Welcome back to StaySafe</Text>
         </View>
 
-        <View style={styles.formWrapper}>
-          <Form
-            onSubmit={handleSignIn}
-            onCancel={() => {}}
-            submitLabel={isLoading ? "Signing in..." : "Sign In"}
-            submitIcon={<Icons.Submit color="white" />}
-            buttonStyle={styles.submitButton}
-            buttonTextStyle={styles.submitButtonText}
-            showCancelButton={false}
-          >
-            <Form.InputText
-              label="Username"
-              value={username}
-              onChange={setUsername}
-              icon={<Icons.User />}
-              style={styles.inputField}
-            />
-            <Form.InputPassword
-              label="Password"
-              value={password}
-              onChange={setPassword}
-              icon={<Icons.Lock />}
-              style={styles.inputField}
-            />
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        <Form
+          onSubmit={handleSignIn}
+          onCancel={() => {}}
+          submitLabel={isLoading ? "Signing in..." : "Sign In"}
+          submitIcon={<Icons.Submit color="white" />}
+          buttonStyle={styles.submitButton}
+          buttonTextStyle={styles.submitButtonText}
+          showCancelButton={false}
+        >
+          <Form.InputText
+            label="Username"
+            value={username}
+            onChange={setUsername}
+            icon={<Icons.User />}
+            style={styles.inputField}
+          />
+          <Form.InputPassword
+            label="Password"
+            value={password}
+            onChange={setPassword}
+            icon={<Icons.Lock />}
+            style={styles.inputField}
+          />
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-            <TouchableOpacity style={styles.forgotPasswordLink}>
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-            </TouchableOpacity>
-          </Form>
-        </View>
+          <TouchableOpacity style={styles.forgotPasswordLink}>
+            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+          </TouchableOpacity>
+        </Form>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Don't have an account? </Text>

@@ -60,7 +60,7 @@ const Form = ({
   );
 };
 
-const InputText = ({ label, value, onChange, icon, style }) => {
+const InputText = ({ label, value, onChange, icon, style, disabled, editable, ...rest }) => {
   const { theme } = useTheme();
   return (
     <View style={[styles.item, style]}>
@@ -70,12 +70,14 @@ const InputText = ({ label, value, onChange, icon, style }) => {
         <TextInput
           value={value}
           onChangeText={onChange}
+          editable={disabled ? false : (editable !== undefined ? editable : true)}
           style={[
             styles.itemInput,
             icon && styles.inputWithIcon,
-            { backgroundColor: theme.inputBackground }
+            { backgroundColor: disabled ? "#ddd" : theme.inputBackground }
           ]}
           placeholderTextColor="#999"
+          {...rest}
         />
       </View>
     </View>

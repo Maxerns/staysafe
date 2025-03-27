@@ -87,6 +87,7 @@ const ActivityModifyScreen = ({ navigation, route }) => {
       };
 
       onModify(newActivity);
+      navigation.goBack();
     } catch (error) {
       Alert.alert("Error", `Error adding activity: ${error.message}`);
       console.error("Error creating activity:", error.message);

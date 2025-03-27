@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, View, Image } from "react-native";
 import { Button, ButtonTray } from "../../UI/Button";
 import Icons from "../../UI/Icons.js";
 
@@ -36,52 +36,46 @@ const ContactView = ({ contact, onDelete, onModify }) => {
       {/* Contact Info Section */}
       <View style={styles.infoSection}>
         <View style={styles.avatarContainer}>
-          <Icons.User width={40} height={40} color="#122f76" />
+          {contact.userDetails && contact.userDetails.UserImageURL ? (
+            <Image
+              source={{ uri: contact.userDetails.UserImageURL }}
+              style={styles.avatar}
+            />
+          ) : (
+            <Icons.User width={40} height={40} color="#122f76" />
+          )}
         </View>
 
         <View style={styles.contactInfoCard}>
           <Text style={styles.contactLabel}>{contact.ContactLabel}</Text>
 
+          {contact.userDetails ? (
+            <>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Username: </Text>
+                <Text style={styles.infoValue}>{contact.userDetails.UserUsername}</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>First Name: </Text>
+                <Text style={styles.infoValue}>{contact.userDetails.UserFirstname}</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Last Name: </Text>
+                <Text style={styles.infoValue}>{contact.userDetails.UserLastname}</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Phone: </Text>
+                <Text style={styles.infoValue}>{contact.userDetails.UserPhone}</Text>
+              </View>
+            </>
+          ) : (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoValue}>User details not available</Text>
+            </View>
+          )}
           <View style={styles.infoRow}>
-            <View style={styles.iconWrapper}>
-              <Icons.User width={18} height={18} color="#555" />
-            </View>
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Contact ID</Text>
-              <Text style={styles.infoValue}>{contact.ContactID}</Text>
-            </View>
-          </View>
-
-          <View style={styles.infoRow}>
-            <View style={styles.iconWrapper}>
-              <Icons.User width={18} height={18} color="#555" />
-            </View>
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>User ID</Text>
-              <Text style={styles.infoValue}>{contact.ContactUserID}</Text>
-            </View>
-          </View>
-
-          <View style={styles.infoRow}>
-            <View style={styles.iconWrapper}>
-              <Icons.User width={18} height={18} color="#555" />
-            </View>
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Contact Reference ID</Text>
-              <Text style={styles.infoValue}>{contact.ContactContactID}</Text>
-            </View>
-          </View>
-
-          <View style={styles.infoRow}>
-            <View style={styles.iconWrapper}>
-              <Icons.User width={18} height={18} color="#555" />
-            </View>
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Created</Text>
-              <Text style={styles.infoValue}>
-                {formatDate(contact.ContactDatecreated)}
-              </Text>
-            </View>
+            <Text style={styles.infoLabel}>Created: </Text>
+            <Text style={styles.infoValue}>{formatDate(contact.ContactDatecreated)}</Text>
           </View>
         </View>
       </View>
@@ -129,6 +123,11 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
   contactInfoCard: {
     backgroundColor: "#f8f9fa",
     borderRadius: 8,
@@ -149,7 +148,7 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: "row",
     marginBottom: 15,
-    alignItems: "flex-start",
+    alignItems: "center",
   },
   iconWrapper: {
     width: 30,
@@ -163,7 +162,7 @@ const styles = StyleSheet.create({
   infoLabel: {
     fontSize: 14,
     color: "#777",
-    marginBottom: 2,
+    marginRight: 5,
   },
   infoValue: {
     fontSize: 16,

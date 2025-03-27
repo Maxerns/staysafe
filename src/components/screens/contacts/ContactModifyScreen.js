@@ -8,7 +8,6 @@ import {
 } from "react-native";
 import Screen from "../../layout/Screen";
 import ContactForm from "../../entity/contacts/ContactForm";
-import intialUsers from "../../../data/users.js";
 import { useTheme } from "../../context/themeContext";
 
 const ContactModifyScreen = ({ navigation, route }) => {
@@ -17,28 +16,23 @@ const ContactModifyScreen = ({ navigation, route }) => {
   const { theme } = useTheme();
   // State -------------------------------------------
   // Handlers ----------------------------------------
-  const foundUser = intialUsers.find(
-    (user) => user.UserID === contact.ContactContactID
-  );
-  const initialContactUsername = foundUser ? foundUser.UserUsername : "";
 
-  const handleSave = (modifiedContact) => {
+  const handleSave = async (modifiedContact) => {
     // Keep original ContactUserID in case it wasn't included in the form
     const updatedContact = {
       ...modifiedContact,
       ContactUserID: contact.ContactUserID,
     };
 
-    onModify(updatedContact);
+    await onModify(updatedContact);
+    navigation.goBack();
   };
 
   const handleCancel = navigation.goBack;
 
   // View --------------------------------------------
   return (
-    <Screen style={[styles.screen, { backgroundColor: theme.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <SafeAreaView style={styles.container}>
+    <Screen>
           <View style={styles.header}>
             <Text style={[styles.title, { color: theme.primary }]}>
               Edit Contact
@@ -48,16 +42,12 @@ const ContactModifyScreen = ({ navigation, route }) => {
             </Text>
           </View>
 
-          <View style={[styles.formWrapper, { backgroundColor: theme.card }]}>
             <ContactForm
               initialContact={contact}
-              initialContactUsername={initialContactUsername}
+              initialContactUsername={contact.userDetails ? contact.userDetails.UserUsername : ""}
               onSave={handleSave}
               onCancel={handleCancel}
             />
-          </View>
-        </SafeAreaView>
-      </ScrollView>
     </Screen>
   );
 };

@@ -36,33 +36,8 @@ export const ContactProvider = ({ children }) => {
         setLoading(false);
         return;
       }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Get user ID consistently
-        const userId = user?.info?.id;
-        console.log("Fetching contacts for user ID:", userId);
-
-        if (!userId) {
-          console.warn("User ID is undefined or null");
-          setContacts([]);
-          return;
-        }
-
-        // Fetch contacts for the current user
-        const userContacts = await contactService.getUserContacts(userId);
-        setContacts(userContacts || []);
-      } catch (err) {
-        console.error("Error fetching contacts:", err);
-        setError(err.message || "Failed to fetch contacts");
-        setContacts([]);
-      } finally {
-        setLoading(false);
-      }
+      await refreshContacts();
     };
-
     fetchContacts();
   }, [user?.info?.id, isSignedIn]);
 
@@ -165,15 +140,35 @@ export const ContactProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-
       const userId = user?.info?.id;
-      if (!userId) return;
-
+      if (!userId) {
+        setContacts([]);
+        return;
+      }
+      // Fetch contacts for the current user
       const userContacts = await contactService.getUserContacts(userId);
-      setContacts(userContacts || []);
+      // Get unique ContactContactID values
+      const contactIds = [
+        ...new Set(userContacts.map((contact) => contact.ContactContactID))
+      ];
+      // Fetch details for each contact using Promise.all
+      const userDetailsMap = {};
+      await Promise.all(
+        contactIds.map(async (id) => {
+          const details = await contactService.getUserById(id);
+          userDetailsMap[id] = details;
+        })
+      );
+      // Attach the fetched user details to every contact
+      const joinedContacts = userContacts.map((contact) => ({
+        ...contact,
+        userDetails: userDetailsMap[contact.ContactContactID] || null,
+      }));
+      setContacts(joinedContacts);
     } catch (err) {
       setError(err.message || "Failed to refresh contacts");
       console.error("Error refreshing contacts:", err);
+      setContacts([]);
     } finally {
       setLoading(false);
     }

@@ -65,7 +65,6 @@ const ContactListScreen = ({ navigation }) => {
       }
 
       await updateContact(contactData.ContactID, contactData);
-      navigation.goBack();
     } catch (err) {
       console.error("Error updating contact:", err);
       Alert.alert("Error", `Failed to update contact: ${err.message}`);
