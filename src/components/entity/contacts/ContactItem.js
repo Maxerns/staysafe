@@ -1,8 +1,10 @@
-import { StyleSheet, Text, View, Pressable } from "react-native";
-import Icons from "../../UI/Icons";
+import { StyleSheet, Text, View, Pressable, Image } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../context/themeContext";
 
 const ContactItem = ({ contact, onSelect }) => {
   // Initialisations ---------------------------------
+  const { theme } = useTheme();
   // State -------------------------------------------
   // Handlers ----------------------------------------
   // View --------------------------------------------
@@ -10,14 +12,27 @@ const ContactItem = ({ contact, onSelect }) => {
     <Pressable
       key={contact.ContactID}
       onPress={() => onSelect(contact)}
-      style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
+      style={({ pressed }) => [
+        styles.container,
+        { backgroundColor: theme.card },
+        pressed && styles.pressed,
+      ]}
     >
       <View style={styles.itemContent}>
         <View style={styles.iconContainer}>
-          <Icons.User />
+          {contact.userDetails && contact.userDetails.UserImageURL ? (
+            <Image
+              source={{ uri: contact.userDetails.UserImageURL }}
+              style={styles.avatar}
+            />
+          ) : (
+            <Icons.User width={40} height={40} color="#122f76" />
+          )}
         </View>
         <View style={styles.textContainer}>
-          <Text style={styles.name}>{contact.ContactLabel}</Text>
+          <Text style={[styles.name, { color: theme.text }]}>
+            {contact.ContactLabel}
+          </Text>
           {contact.ContactNotes && (
             <Text style={styles.notes} numberOfLines={1}>
               {contact.ContactNotes}
@@ -25,7 +40,9 @@ const ContactItem = ({ contact, onSelect }) => {
           )}
         </View>
         <View style={styles.chevron}>
-          <Text style={styles.chevronText}>›</Text>
+          <Text style={styles.chevronText}>
+            <Ionicons name="chevron-forward" size={16} color={theme.text} />
+          </Text>
         </View>
       </View>
     </Pressable>
@@ -33,6 +50,17 @@ const ContactItem = ({ contact, onSelect }) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    marginVertical: 8,
+
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    overflow: "hidden",
+  },
   item: {
     borderRadius: 8,
     marginVertical: 6,
@@ -56,6 +84,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 40,
   },
   textContainer: {
     flex: 1,

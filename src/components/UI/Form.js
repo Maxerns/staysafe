@@ -23,10 +23,6 @@ const Form = ({
   onCancel,
   submitLabel,
   submitIcon,
-  buttonStyle,
-  buttonTextStyle,
-  cancelButtonStyle,
-  cancelTextStyle,
   showCancelButton = true,
 }) => {
   const { theme } = useTheme();
@@ -70,6 +66,7 @@ const InputText = ({ label, value, onChange, icon, style, disabled, editable, ..
           editable={disabled ? false : (editable !== undefined ? editable : true)}
           style={[
             styles.itemInput,
+            { color: theme.text },
             icon && styles.inputWithIcon,
             { backgroundColor: disabled ? "#ddd" : theme.inputBackground }
           ]}
@@ -130,6 +127,7 @@ const InputPassword = ({ label, value, onChange, icon, style }) => {
           onChangeText={onChange}
           style={[
             styles.itemInput,
+            { color: theme.text },
             icon && styles.inputWithIcon,
             { backgroundColor: theme.inputBackground }
           ]}
@@ -200,7 +198,7 @@ const InputDate = ({ label, value, onChange }) => {
           onPress={openAndroidPicker}
           style={[styles.itemInput, { backgroundColor: theme.inputBackground }]}
         >
-          <Text>
+          <Text style={{ color: theme.text }}>
             {value ? new Date(value).toLocaleString() : "Select Date & Time"}
           </Text>
         </TouchableOpacity>

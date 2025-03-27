@@ -1,8 +1,10 @@
 import { StyleSheet, Text, View } from "react-native";
 import Selector from "./Selector";
+import { useTheme } from "../context/themeContext";
 
 export const Button = ({ label, icon, onClick, styleLabel, styleButton }) => {
   // Initialisations ---------------------------------
+  const { theme } = useTheme();
   // State -------------------------------------------
   // Handlers ----------------------------------------
   // View --------------------------------------------
@@ -13,7 +15,7 @@ export const Button = ({ label, icon, onClick, styleLabel, styleButton }) => {
       pressedStyle={[styles.pressedButton, styleButton && { opacity: 0.85 }]}
     >
       {icon ? <View style={styles.iconContainer}>{icon}</View> : null}
-      <Text style={[styles.label, styleLabel]}>{label}</Text>
+      <Text style={[styles.label, styleLabel, { color: theme.text }]}>{label}</Text>
     </Selector>
   );
 };

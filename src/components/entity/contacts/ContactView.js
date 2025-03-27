@@ -34,7 +34,7 @@ const ContactView = ({ contact, onDelete, onModify }) => {
 
   // View --------------------------------------------
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.card }]}>
       <View>
         <View style={styles.avatarContainer}>
           {contact.userDetails && contact.userDetails.UserImageURL ? (
@@ -47,43 +47,43 @@ const ContactView = ({ contact, onDelete, onModify }) => {
           )}
         </View>
 
-        <Text style={styles.contactLabel}>{contact.ContactLabel}</Text>
+        <Text style={[styles.contactLabel, { color: theme.primary }]}>{contact.ContactLabel}</Text>
 
         {contact.userDetails ? (
           <>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Username: </Text>
-              <Text style={styles.infoValue}>
+              <Text style={[styles.infoLabel, { color: theme.text }]}>Username: </Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>
                 {contact.userDetails.UserUsername}
               </Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>First Name: </Text>
-              <Text style={styles.infoValue}>
+              <Text style={[styles.infoLabel, { color: theme.text }]}>First Name: </Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>
                 {contact.userDetails.UserFirstname}
               </Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Last Name: </Text>
-              <Text style={styles.infoValue}>
+              <Text style={[styles.infoLabel, { color: theme.text }]}>Last Name: </Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>
                 {contact.userDetails.UserLastname}
               </Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Phone: </Text>
-              <Text style={styles.infoValue}>
+              <Text style={[styles.infoLabel, { color: theme.text }]}>Phone: </Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>
                 {contact.userDetails.UserPhone}
               </Text>
             </View>
           </>
         ) : (
           <View style={styles.infoRow}>
-            <Text style={styles.infoValue}>User details not available</Text>
+            <Text style={[styles.infoValue, { color: theme.text }]}>User details not available</Text>
           </View>
         )}
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Created: </Text>
-          <Text style={styles.infoValue}>
+          <Text style={[styles.infoLabel, { color: theme.text }]}>Created: </Text>
+          <Text style={[styles.infoValue, { color: theme.text }]}>
             {formatDate(contact.ContactDatecreated)}
           </Text>
         </View>
@@ -138,7 +138,6 @@ const styles = StyleSheet.create({
   contactLabel: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#122f76",
     textAlign: "center",
     marginBottom: 20,
   },
@@ -152,12 +151,10 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: "#777",
     marginRight: 5,
   },
   infoValue: {
     fontSize: 16,
-    color: "#333",
     fontWeight: "500",
   },
 });
