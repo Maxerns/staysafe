@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Text, StyleSheet, View, ActivityIndicator, Alert, TouchableOpacity } from "react-native";
+import {
+  Text,
+  StyleSheet,
+  View,
+  ActivityIndicator,
+  Alert,
+  TouchableOpacity,
+} from "react-native";
 import { Button } from "../../UI/Button.js";
 import Icons from "../../UI/Icons.js";
 import ContactList from "../../entity/contacts/ContactList.js";
@@ -29,11 +36,11 @@ const ContactListScreen = ({ navigation }) => {
   const onDelete = async (contactId) => {
     try {
       await deleteContact(contactId);
-      navigation.goBack();
     } catch (err) {
       console.error("Error deleting contact:", err);
       Alert.alert("Error", `Failed to delete contact: ${err.message}`);
     }
+    navigation.goBack();
   };
 
   const onAdd = async (contactData) => {
@@ -84,36 +91,46 @@ const ContactListScreen = ({ navigation }) => {
   // View --------------------------------------------
   return (
     <Screen>
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={theme.primary} />
-            <Text style={[styles.loadingText, { color: theme.text }]}>
-              Loading contacts...
-            </Text>
-          </View>
-        ) : error ? (
-          <View style={styles.errorContainer}>
-            <Text style={[styles.errorText, { color: theme.error }]}>
-              Error: {error}
-            </Text>
-            <Button
-              label="Retry"
-              onClick={refreshContacts}
-              styleButton={styles.retryButton}
-              styleLabel={styles.retryButtonText}
-            />
-          </View>
-        ) : contacts.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={[styles.emptyText, { color: theme.text }]}>
-              No contacts found
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.listContainer}>
-            <ContactList contacts={contacts} onSelect={goToViewScreen} />
-          </View>
-        )}
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.primary} />
+          <Text style={[styles.loadingText, { color: theme.text }]}>
+            Loading contacts...
+          </Text>
+        </View>
+      ) : error ? (
+        <View style={styles.errorContainer}>
+          <Text style={[styles.errorText, { color: theme.error }]}>
+            Error: {error}
+          </Text>
+          <Button
+            label="Retry"
+            onClick={refreshContacts}
+            styleButton={styles.retryButton}
+            styleLabel={styles.retryButtonText}
+          />
+        </View>
+      ) : contacts.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={[styles.emptyText, { color: theme.text }]}>
+            No contacts found
+          </Text>
+          <Text style={styles.emptySubtext}>
+            Add contacts to keep track of your connections
+          </Text>
+          <TouchableOpacity
+            style={styles.emptyAddButton}
+            onPress={goToAddScreen}
+          >
+            <Ionicons name="add" size={20} color="white" />
+            <Text style={styles.emptyAddButtonText}>Add First Contact</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.listContainer}>
+          <ContactList contacts={contacts} onSelect={goToViewScreen} />
+        </View>
+      )}
       {/* FAB Button */}
       <TouchableOpacity
         style={[styles.fab, { backgroundColor: theme?.primary || "#122f76" }]}
@@ -175,6 +192,34 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+  },
+  emptyText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#555",
+    marginTop: 20,
+  },
+  emptySubtext: {
+    fontSize: 16,
+    color: "#888",
+    marginTop: 10,
+    textAlign: "center",
+    lineHeight: 24,
+  },
+  emptyAddButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#ff3b3b",
+    paddingVertical: 14,
+    paddingHorizontal: 25,
+    borderRadius: 30,
+    marginTop: 30,
+  },
+  emptyAddButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+    marginLeft: 8,
   },
   emptyText: {
     fontSize: 18,

@@ -1,12 +1,10 @@
-import { Text, View, StyleSheet, ScrollView, SafeAreaView } from "react-native";
+import { StyleSheet } from "react-native";
 import Screen from "../../layout/Screen";
 import ContactView from "../../entity/contacts/ContactView";
-import { useTheme } from "../../context/themeContext";
 
 const ContactViewScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
   const { contact, onDelete, onModify } = route.params;
-  const { theme } = useTheme();
   // State -------------------------------------------
   // Handlers ----------------------------------------
   const goToModifyScreen = () =>

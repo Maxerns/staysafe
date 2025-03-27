@@ -1,9 +1,11 @@
 import { Alert, StyleSheet, Text, View, Image } from "react-native";
 import { Button, ButtonTray } from "../../UI/Button";
 import Icons from "../../UI/Icons.js";
+import { useTheme } from "../../context/themeContext.js";
 
 const ContactView = ({ contact, onDelete, onModify }) => {
   // Initialisations ---------------------------------
+  const { theme } = useTheme();
   // State -------------------------------------------
   // Handlers ----------------------------------------
   const handleDelete = () => onDelete(contact);
@@ -33,8 +35,7 @@ const ContactView = ({ contact, onDelete, onModify }) => {
   // View --------------------------------------------
   return (
     <View style={styles.container}>
-      {/* Contact Info Section */}
-      <View style={styles.infoSection}>
+      <View>
         <View style={styles.avatarContainer}>
           {contact.userDetails && contact.userDetails.UserImageURL ? (
             <Image
@@ -46,54 +47,61 @@ const ContactView = ({ contact, onDelete, onModify }) => {
           )}
         </View>
 
-        <View style={styles.contactInfoCard}>
-          <Text style={styles.contactLabel}>{contact.ContactLabel}</Text>
+        <Text style={styles.contactLabel}>{contact.ContactLabel}</Text>
 
-          {contact.userDetails ? (
-            <>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Username: </Text>
-                <Text style={styles.infoValue}>{contact.userDetails.UserUsername}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>First Name: </Text>
-                <Text style={styles.infoValue}>{contact.userDetails.UserFirstname}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Last Name: </Text>
-                <Text style={styles.infoValue}>{contact.userDetails.UserLastname}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Phone: </Text>
-                <Text style={styles.infoValue}>{contact.userDetails.UserPhone}</Text>
-              </View>
-            </>
-          ) : (
+        {contact.userDetails ? (
+          <>
             <View style={styles.infoRow}>
-              <Text style={styles.infoValue}>User details not available</Text>
+              <Text style={styles.infoLabel}>Username: </Text>
+              <Text style={styles.infoValue}>
+                {contact.userDetails.UserUsername}
+              </Text>
             </View>
-          )}
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>First Name: </Text>
+              <Text style={styles.infoValue}>
+                {contact.userDetails.UserFirstname}
+              </Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Last Name: </Text>
+              <Text style={styles.infoValue}>
+                {contact.userDetails.UserLastname}
+              </Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Phone: </Text>
+              <Text style={styles.infoValue}>
+                {contact.userDetails.UserPhone}
+              </Text>
+            </View>
+          </>
+        ) : (
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Created: </Text>
-            <Text style={styles.infoValue}>{formatDate(contact.ContactDatecreated)}</Text>
+            <Text style={styles.infoValue}>User details not available</Text>
           </View>
+        )}
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Created: </Text>
+          <Text style={styles.infoValue}>
+            {formatDate(contact.ContactDatecreated)}
+          </Text>
         </View>
       </View>
 
-      {/* Actions Section */}
       <ButtonTray style={styles.buttonTray}>
         <Button
           icon={<Icons.Edit />}
           label="Modify"
           onClick={onModify}
-          styleButton={styles.modifyButton}
-          styleLabel={styles.modifyButtonText}
+          styleButton={{ backgroundColor: theme.primary }}
+          styleLabel={{ color: theme.buttonText }}
         />
         <Button
           icon={<Icons.Delete />}
           label="Delete"
-          styleButton={styles.deleteButton}
-          styleLabel={styles.deleteButtonText}
+          styleButton={{ backgroundColor: theme.error }}
+          styleLabel={{ color: theme.buttonText }}
           onClick={requestDelete}
         />
       </ButtonTray>
@@ -103,17 +111,16 @@ const ContactView = ({ contact, onDelete, onModify }) => {
 
 const styles = StyleSheet.create({
   container: {
+    borderRadius: 12,
     gap: 25,
-  },
-  infoSection: {
-    gap: 20,
+    backgroundColor: "white",
+    padding: 16,
   },
   avatarContainer: {
     alignSelf: "center",
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#e8ebf2",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 10,
@@ -128,16 +135,6 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
   },
-  contactInfoCard: {
-    backgroundColor: "#f8f9fa",
-    borderRadius: 8,
-    padding: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
   contactLabel: {
     fontSize: 22,
     fontWeight: "bold",
@@ -149,12 +146,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginBottom: 15,
     alignItems: "center",
-  },
-  iconWrapper: {
-    width: 30,
-    justifyContent: "flex-start",
-    alignItems: "center",
-    marginTop: 2,
   },
   infoContent: {
     flex: 1,
@@ -168,25 +159,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
     fontWeight: "500",
-  },
-  buttonTray: {
-    marginTop: 10,
-  },
-  modifyButton: {
-    backgroundColor: "#122f76",
-    borderColor: "#122f76",
-  },
-  modifyButtonText: {
-    color: "white",
-    fontWeight: "600",
-  },
-  deleteButton: {
-    backgroundColor: "#fff0f0",
-    borderColor: "#ffcccb",
-  },
-  deleteButtonText: {
-    color: "#ff3b3b",
-    fontWeight: "600",
   },
 });
 

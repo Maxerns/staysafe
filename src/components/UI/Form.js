@@ -40,19 +40,16 @@ const Form = ({
           label={submitLabel}
           icon={submitIcon}
           onClick={onSubmit}
-          styleButton={[
-            !showCancelButton && styles.fullWidthButton,
-            buttonStyle,
-          ]}
-          styleLabel={buttonTextStyle}
+          styleButton={{ backgroundColor: theme.primary }}
+          styleLabel={{ color: theme.buttonText }}
         />
         {showCancelButton && (
           <Button
             label="Cancel"
             icon={<Icons.Close />}
             onClick={onCancel}
-            styleButton={cancelButtonStyle || styles.cancelButton}
-            styleLabel={cancelTextStyle || styles.cancelButtonText}
+            styleButton={{ backgroundColor: theme.border }}
+            
           />
         )}
       </ButtonTray>

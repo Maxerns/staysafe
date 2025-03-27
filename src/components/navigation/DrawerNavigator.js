@@ -27,16 +27,8 @@ const CustomDrawerContent = (props) => {
 
   // View --------------------------------------------
   return (
-    <View
-      style={[
-        styles.drawerContainer,
-        { backgroundColor: theme.drawerBackground },
-      ]}
-    >
-      <DrawerContentScrollView
-        {...props}
-        contentContainerStyle={styles.scrollContent}
-      >
+    <View style={[styles.drawerContainer, { backgroundColor: theme.drawerBackground }]}>
+      <View>
         <View
           style={[
             styles.drawerHeader,
@@ -55,7 +47,7 @@ const CustomDrawerContent = (props) => {
         </View>
 
         <View
-          style={[styles.drawerItemsContainer, { backgroundColor: theme.card }]}
+          style={[styles.drawerItemsContainer, { backgroundColor: theme.background }]}
         >
           <Text style={[styles.sectionTitle, { color: theme.inactive }]}>
             NAVIGATION
@@ -97,14 +89,14 @@ const CustomDrawerContent = (props) => {
             </View>
           </View>
         </View>
-      </DrawerContentScrollView>
+      </View>
 
       <View style={[styles.signOutContainer, { borderTopColor: theme.border }]}>
         <Button
           label="Sign Out"
           onClick={handleSignOut}
-          styleButton={styles.signOutButton}
-          styleLabel={styles.signOutButtonText}
+          styleButton={{ backgroundColor: theme.accent }}
+          styleLabel={{ color: theme.buttonText }}
         />
       </View>
     </View>
@@ -160,13 +152,11 @@ const DrawerNavigator = () => {
 const styles = StyleSheet.create({
   drawerContainer: {
     flex: 1,
+    justifyContent: "space-between", // forces sign out at bottom
   },
-  scrollContent: {
-    paddingVertical: 0,
-  },
+
   drawerHeader: {
-    padding: 20,
-    paddingBottom: 30,
+    padding: 36,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -200,12 +190,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingTop: 20,
-    paddingBottom: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
   },
   sectionTitle: {
     fontSize: 12,
@@ -246,19 +230,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderTopWidth: 1,
     marginTop: 10,
-    marginBottom: 20,
-  },
-  signOutButton: {
-    backgroundColor: "#ff3b3b",
-    borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  signOutButtonText: {
-    color: "white",
-    fontWeight: "600",
-    fontSize: 16,
+    marginBottom: 48,
   },
 });
 

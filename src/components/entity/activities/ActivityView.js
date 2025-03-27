@@ -100,7 +100,7 @@ const ActivityView = ({
             <Button
               icon={<Icons.Edit />}
               label="Modify"
-              styleButton={{ backgroundColor: theme.info }}
+              styleButton={{ backgroundColor: theme.primary }}
               styleLabel={{ color: theme.buttonText }}
               onClick={onModify}
             />

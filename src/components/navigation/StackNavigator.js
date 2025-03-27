@@ -33,6 +33,7 @@ const StackNavigator = () => {
     headerTintColor: theme.headerText,
     headerShadowVisible: true,
     animation: "slide_from_right",
+    
     // Back button settings
     headerBackTitleVisible: false,
     headerLeftContainerStyle: {

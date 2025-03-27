@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import Icons from "../../UI/Icons.js";
 import Form from "../../UI/Form.js";
 import { Button } from "../../UI/Button";
+import { useTheme } from "../../context/themeContext.js";
 
 const defaultActivity = {
   ActivityID: null,
@@ -20,6 +21,7 @@ const ActivityForm = ({
   initialLocations,
 }) => {
   // Initialisations ---------------------------------
+   const { theme } = useTheme();
   // State -------------------------------------------
   const [activity, setActivity] = useState(originalActivity || defaultActivity);
   const [locations, setLocations] = useState(initialLocations || [null, null]);
@@ -119,6 +121,8 @@ const ActivityForm = ({
               : "Select Locations"
           }
           onClick={handleSelectLocations}
+          styleButton={{ backgroundColor: theme.primary }}
+          styleLabel={{ color: theme.buttonText }}
         />
         {errors.locationFrom || errors.locationTo ? (
           <Text style={styles.errorText}>
