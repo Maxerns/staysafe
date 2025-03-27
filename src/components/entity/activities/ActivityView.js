@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, View, ActivityIndicator } from "react-native";
 import { Button, ButtonTray } from "../../UI/Button";
 import Icons from "../../UI/Icons.js";
 import { useContext } from "react";
@@ -6,93 +6,129 @@ import { AuthContext } from "../../context/authContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../context/themeContext";
 
-const ActivityView = ({ activity, onDelete, onModify }) => {
-  // Initialisations ---------------------------------
+const ActivityView = ({
+  activity,
+  onDelete,
+  onModify,
+  locationFrom,
+  locationTo,
+  onViewMap,
+  onStatusChange,
+  isOwner,
+  isLoadingLocations,
+}) => {
   const { user } = useContext(AuthContext);
   const { theme } = useTheme();
-  const isOwner = activity.ActivityUserID === user.info.id;
-  
-  // Handlers ----------------------------------------
-  const handleDelete = () => onDelete(activity.ActivityID);
 
-  const requestDelete = () =>
-    Alert.alert(
-      "Delete Activity",
-      `Are you sure that you want to delete "${activity.ActivityLabel}"?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Delete", style: "destructive", onPress: handleDelete },
-      ]
-    );
-
-  // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return "Not specified";
     const date = new Date(dateString);
-    return date.toLocaleDateString() + " at " + 
-           date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return date.toLocaleDateString() + " at " + date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  // View --------------------------------------------
+  const renderStatusButtons = () => {
+    if (!isOwner) return null;
+    const statusActions = [
+      { id: 2, label: "Start", color: "green", icon: "play-outline" },
+      { id: 3, label: "Pause", color: "orange", icon: "pause-outline" },
+      { id: 4, label: "Cancel", color: "red", icon: "close-circle-outline" },
+      { id: 5, label: "Complete", color: "blue", icon: "checkmark-done-outline" },
+    ];
+    return statusActions.map((action) => (
+      <Button
+        key={action.id}
+        icon={<Ionicons name={action.icon} size={20} color="white" />}
+        styleButton={{
+          backgroundColor: action.id === activity.ActivityStatusID ? "lightgrey" : action.color,
+        }}
+        onClick={() => onStatusChange(action.id)}
+        disabled={action.id === activity.ActivityStatusID}
+      />
+    ));
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.card }]}>
-      <View style={styles.header}>
+      <View style={styles.detailsContainer}>
         <Text style={[styles.title, { color: theme.primary }]}>
           {activity.ActivityName || activity.ActivityLabel || "Unnamed Activity"}
         </Text>
-      </View>
-      
-      <View style={styles.infoTray}>
         {activity.ActivityDescription && (
-          <View style={styles.infoRow}>
-            <Ionicons name="information-circle-outline" size={18} color={theme.text} />
-            <Text style={[styles.text, { color: theme.text }]}>
-              {activity.ActivityDescription}
-            </Text>
-          </View>
-        )}
-        
-        <View style={styles.infoRow}>
-          <Ionicons name="calendar-outline" size={18} color={theme.text} />
-          <Text style={[styles.text, { color: theme.text }]}>
-            Created: {formatDate(activity.ActivityDateCreated)}
+          <Text style={[styles.description, { color: theme.text }]}>
+            {activity.ActivityDescription}
           </Text>
-        </View>
-        
-        <View style={styles.timeContainer}>
-          <View style={styles.timeRow}>
-            <Ionicons name="time-outline" size={18} color={theme.info} />
-            <Text style={[styles.timeLabel, { color: theme.info }]}>Departure:</Text>
-            <Text style={[styles.timeValue, { color: theme.text }]}>
-              {formatDate(activity.ActivityLeave)}
-            </Text>
-          </View>
-          
-          <View style={styles.timeRow}>
-            <Ionicons name="flag-outline" size={18} color={theme.success} />
-            <Text style={[styles.timeLabel, { color: theme.success }]}>Arrival:</Text>
-            <Text style={[styles.timeValue, { color: theme.text }]}>
-              {formatDate(activity.ActivityArrive)}
-            </Text>
-          </View>
-        </View>
+        )}
       </View>
-      
-      {isOwner && (
+
+      <View style={styles.scheduleContainer}>
+        {isLoadingLocations ? (
+          <ActivityIndicator size="small" color={theme.primary} />
+        ) : (
+          <>
+            <View style={styles.scheduleBlock}>
+              <Ionicons name="log-out-outline" size={20} color={theme.info} />
+              <Text style={[styles.scheduleLabel, { color: theme.primary }]}>{locationFrom?.LocationName || "N/A"}</Text>
+              <Text style={[styles.scheduleTime, { color: theme.text }]}>
+                {formatDate(activity.ActivityLeave)}
+              </Text>
+            </View>
+            <View style={styles.scheduleBlock}>
+              <Ionicons name="flag-outline" size={20} color={theme.success} />
+              <Text style={[styles.scheduleLabel, { color: theme.primary }]}>{locationTo?.LocationName || "N/A"}</Text>
+              <Text style={[styles.scheduleTime, { color: theme.text }]}>
+                {formatDate(activity.ActivityArrive)}
+              </Text>
+            </View>
+          </>
+        )}
+      </View>
+
+      {isOwner ? (
+        <>
+          <View style={styles.buttonRow}>
+            <Button
+              label="View Map"
+              icon={<Ionicons name="map-outline" size={16} color="white" />}
+              styleButton={{ backgroundColor: "dodgerblue" }}
+              onClick={onViewMap}
+            />
+          </View>
+          <View style={styles.buttonRow}>
+            {renderStatusButtons()}
+          </View>
+          <View style={styles.buttonRow}>
+            <Button
+              icon={<Icons.Edit />}
+              label="Modify"
+              styleButton={{ backgroundColor: theme.info }}
+              styleLabel={{ color: theme.buttonText }}
+              onClick={onModify}
+            />
+            <Button
+              icon={<Icons.Delete />}
+              label="Delete"
+              styleButton={{ backgroundColor: theme.error }}
+              styleLabel={{ color: theme.buttonText }}
+              onClick={() =>
+                Alert.alert(
+                  "Delete Activity",
+                  `Are you sure that you want to delete "${activity.ActivityLabel}"?`,
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    { text: "Delete", style: "destructive", onPress: () => onDelete(activity.ActivityID) },
+                  ]
+                )
+              }
+            />
+          </View>
+        </>
+      ) : (
         <ButtonTray style={styles.buttonTray}>
-          <Button 
-            icon={<Icons.Edit />} 
-            label="Modify" 
-            styleButton={{ backgroundColor: theme.info }}
-            styleLabel={{ color: theme.buttonText }}
-            onClick={onModify} 
-          />
           <Button
-            icon={<Icons.Delete />}
-            label="Delete"
-            styleButton={{ backgroundColor: theme.error }}
-            styleLabel={{ color: theme.buttonText }}
-            onClick={requestDelete}
+            label="View Activity"
+            icon={<Ionicons name="eye-outline" size={16} color="white" />}
+            styleButton={{ backgroundColor: "dodgerblue" }}
+            onClick={onViewMap}
           />
         </ButtonTray>
       )}
@@ -103,7 +139,7 @@ const ActivityView = ({ activity, onDelete, onModify }) => {
 const styles = StyleSheet.create({
   container: {
     borderRadius: 12,
-    marginBottom: 15,
+    margin: 10,
     padding: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -111,49 +147,52 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  header: {
+  detailsContainer: {
     marginBottom: 12,
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
   },
-  infoTray: {
-    gap: 12,
+  description: {
+    fontSize: 16,
+    marginTop: 6,
   },
-  infoRow: {
+  scheduleContainer: {
+    flexDirection: "column", // changed from "row" to "column"
+    marginBottom: 16,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
+  },
+  scheduleBlock: {
+    marginBottom: 10, // added spacing between rows
+  },
+  scheduleLabel: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: 4,
+  },
+  scheduleLocation: {
+    fontSize: 14,
+    marginTop: 2,
+  },
+  scheduleTime: {
+    fontSize: 14,
+    marginTop: 2,
+  },
+  buttonRow: {
     flexDirection: "row",
-    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
-  },
-  text: {
-    fontSize: 15,
-    flex: 1,
-  },
-  timeContainer: {
-    backgroundColor: 'rgba(0,0,0,0.02)',
-    borderRadius: 8,
-    padding: 10,
-    marginTop: 8,
-  },
-  timeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 4,
-  },
-  timeLabel: {
-    fontSize: 14,
-    fontWeight: "bold",
-    marginLeft: 8,
-    width: 80,
-  },
-  timeValue: {
-    fontSize: 14,
-    flex: 1,
+    marginBottom: 8,
   },
   buttonTray: {
-    marginTop: 16,
-    justifyContent: "flex-end",
+    flexDirection: "column",
+    flexWrap: "nowrap",
+    justifyContent: "center",
+    gap: 8,
   },
 });
 

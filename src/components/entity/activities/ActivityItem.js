@@ -135,7 +135,7 @@ const ActivityItem = ({ activity, onSelect }) => {
 const styles = StyleSheet.create({
   container: {
     marginVertical: 8,
-    marginHorizontal: 16,
+
     borderRadius: 12,
     elevation: 2,
     shadowColor: "#000",

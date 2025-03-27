@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Text, StyleSheet, View, ActivityIndicator, Alert } from "react-native";
-import { ButtonTray, Button } from "../../UI/Button.js";
+import { Text, StyleSheet, View, ActivityIndicator, Alert, TouchableOpacity } from "react-native";
+import { Button } from "../../UI/Button.js";
 import Icons from "../../UI/Icons.js";
 import ContactList from "../../entity/contacts/ContactList.js";
 import { useContacts } from "../../context/contactContext";
@@ -8,6 +8,7 @@ import Screen from "../../layout/Screen.js";
 import { useContext } from "react";
 import { AuthContext } from "../../context/authContext.js";
 import { useTheme } from "../../context/themeContext";
+import { Ionicons } from "@expo/vector-icons";
 
 const ContactListScreen = ({ navigation }) => {
   // Initialisations ---------------------------------
@@ -83,15 +84,7 @@ const ContactListScreen = ({ navigation }) => {
 
   // View --------------------------------------------
   return (
-    <Screen style={[styles.screen, { backgroundColor: theme.background }]}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.primary }]}>Contacts</Text>
-        <Text style={[styles.subtitle, { color: theme.inactive }]}>
-          Manage your StaySafe contacts
-        </Text>
-      </View>
-
-      <View style={[styles.contentContainer, { backgroundColor: theme.card }]}>
+    <Screen>
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={theme.primary} />
@@ -122,28 +115,18 @@ const ContactListScreen = ({ navigation }) => {
             <ContactList contacts={contacts} onSelect={goToViewScreen} />
           </View>
         )}
-      </View>
-
-      <ButtonTray style={styles.buttonTray}>
-        <Button
-          label="Add New Contact"
-          icon={<Icons.Add />}
-          onClick={goToAddScreen}
-          styleButton={[
-            styles.addButton,
-            { backgroundColor: theme.primary, borderColor: theme.primary },
-          ]}
-          styleLabel={styles.addButtonText}
-        />
-      </ButtonTray>
+      {/* FAB Button */}
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: theme?.primary || "#122f76" }]}
+        onPress={goToAddScreen}
+      >
+        <Ionicons name="add" size={30} color="white" />
+      </TouchableOpacity>
     </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  screen: {
-    padding: 20,
-  },
   header: {
     marginBottom: 30,
     alignItems: "center",
@@ -202,13 +185,22 @@ const styles = StyleSheet.create({
   listContainer: {
     flex: 1,
   },
-  buttonTray: {
-    marginTop: 20,
+  // Removed or ignore old buttonTray, addButton, addButtonText styles
+  fab: {
+    position: "absolute",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    right: 20,
+    bottom: 30,
     justifyContent: "center",
-  },
-  addButtonText: {
-    color: "white",
-    fontWeight: "600",
+    alignItems: "center",
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 999,
   },
   retryButton: {
     backgroundColor: "#ff3b3b",

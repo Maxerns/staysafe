@@ -76,12 +76,12 @@ const ActivityForm = ({
   const handleSubmit = () => {
     if (validateForm()) {
       // Apply activity name/description to location points if they exist
-      const updatedLocations = locations.map((location, index) => {
+      const updatedLocations = locations.map((location) => {
         if (location) {
           return {
             ...location,
-            LocationName: index === 0 ? `From: ${activity.ActivityName}` : `To: ${activity.ActivityName}`,
-            LocationDescription: activity.ActivityDescription || location.LocationAddress || ""
+            LocationName: activity.ActivityName,
+            LocationDescription: activity.ActivityDescription
           };
         }
         return location;
@@ -109,6 +109,7 @@ const ActivityForm = ({
       onCancel={onCancel}
       submitLabel={submitLabel}
       submitIcon={submitIcon}
+      
     >
       <View>
         <Button
@@ -176,6 +177,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 5,
   },
+
 });
 
 export default ActivityForm;

@@ -140,9 +140,6 @@ const DrawerNavigator = () => {
         drawerStyle: {
           backgroundColor: theme.drawerBackground,
         },
-        sceneContainerStyle: {
-          backgroundColor: theme.background,
-        },
         headerRight: () => <Image source={require("../../../assets/StaySafeVector.png")} style={styles.miniLogo} />,
       }}
     >

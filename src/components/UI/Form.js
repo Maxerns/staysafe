@@ -15,6 +15,7 @@ import { SelectList } from "react-native-dropdown-select-list";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { TouchableOpacity } from "react-native";
+import { useTheme } from "../context/themeContext";
 
 const Form = ({
   children,
@@ -28,8 +29,9 @@ const Form = ({
   cancelTextStyle,
   showCancelButton = true,
 }) => {
+  const { theme } = useTheme();
   return (
-    <KeyboardAvoidingView style={styles.formContainer}>
+    <KeyboardAvoidingView style={[styles.formContainer, { backgroundColor: theme.card }]}>
       <ScrollView contentContainerStyle={styles.formItems}>
         {children}
       </ScrollView>
@@ -59,6 +61,7 @@ const Form = ({
 };
 
 const InputText = ({ label, value, onChange, icon, style }) => {
+  const { theme } = useTheme();
   return (
     <View style={[styles.item, style]}>
       <Text style={styles.itemLabel}>{label}</Text>
@@ -67,7 +70,11 @@ const InputText = ({ label, value, onChange, icon, style }) => {
         <TextInput
           value={value}
           onChangeText={onChange}
-          style={[styles.itemInput, icon && styles.inputWithIcon]}
+          style={[
+            styles.itemInput,
+            icon && styles.inputWithIcon,
+            { backgroundColor: theme.inputBackground }
+          ]}
           placeholderTextColor="#999"
         />
       </View>
@@ -83,6 +90,7 @@ const InputSelect = ({
   onChange,
   isLoading = false,
 }) => {
+  const { theme } = useTheme();
   const selectListData = options.map((option) => ({
     key: option.value,
     value: option.label,
@@ -101,7 +109,7 @@ const InputSelect = ({
           data={selectListData}
           placeholder={prompt}
           defaultOption={selectListData.find((item) => item.key === value)}
-          boxStyles={styles.selectListBoxStyle}
+          boxStyles={{ ...styles.selectListBoxStyle, backgroundColor: theme.inputBackground }}
           dropdownStyles={styles.selectListDropdownStyle}
         />
       )}
@@ -110,6 +118,7 @@ const InputSelect = ({
 };
 
 const InputPassword = ({ label, value, onChange, icon, style }) => {
+  const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -120,7 +129,11 @@ const InputPassword = ({ label, value, onChange, icon, style }) => {
         <TextInput
           value={value}
           onChangeText={onChange}
-          style={[styles.itemInput, icon && styles.inputWithIcon]}
+          style={[
+            styles.itemInput,
+            icon && styles.inputWithIcon,
+            { backgroundColor: theme.inputBackground }
+          ]}
           secureTextEntry={!showPassword}
           placeholderTextColor="#999"
         />
@@ -145,6 +158,7 @@ const InputCheckbox = ({ label, value, onChange }) => {
 };
 
 const InputDate = ({ label, value, onChange }) => {
+  const { theme } = useTheme();
   // For Android, use the imperative API chaining date then time pickers.
   if (Platform.OS === "android") {
     const openAndroidPicker = () => {
@@ -183,7 +197,10 @@ const InputDate = ({ label, value, onChange }) => {
     return (
       <View style={styles.item}>
         <Text style={styles.itemLabel}>{label}</Text>
-        <TouchableOpacity onPress={openAndroidPicker} style={styles.itemInput}>
+        <TouchableOpacity
+          onPress={openAndroidPicker}
+          style={[styles.itemInput, { backgroundColor: theme.inputBackground }]}
+        >
           <Text>
             {value ? new Date(value).toLocaleString() : "Select Date & Time"}
           </Text>
@@ -226,6 +243,13 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     gap: 25,
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   item: {
     flex: 1,

@@ -1,7 +1,15 @@
+import React from "react"; // added to support cloneElement
 import { StyleSheet, Text, View } from "react-native";
 import Selector from "./Selector";
+import { useTheme } from "../context/themeContext";
 
-export const Button = ({ label, icon, onClick, styleLabel, styleButton }) => {
+export const Button = ({ label, icon, onClick, styleLabel, styleButton, primary }) => {
+  // Retrieve theme from context
+  const { theme } = useTheme();
+  // Determine background based on primary flag
+  const backgroundColor = primary ? theme.primary : theme.card;
+  // Use theme text color for button text
+  const labelColor = theme.text;
   // Initialisations ---------------------------------
   // State -------------------------------------------
   // Handlers ----------------------------------------
@@ -9,11 +17,23 @@ export const Button = ({ label, icon, onClick, styleLabel, styleButton }) => {
   return (
     <Selector
       onPress={onClick}
-      style={[styles.button, styleButton]}
-      pressedStyle={[styles.pressedButton, styleButton && { opacity: 0.85 }]}
+      style={[
+        styles.button,
+        styleButton,
+        { backgroundColor } // apply dynamic background color
+      ]}
+      pressedStyle={[
+        styles.pressedButton,
+        styleButton && { opacity: 0.85 },
+        { backgroundColor } // apply dynamic background color on press
+      ]}
     >
-      {icon ? <View style={styles.iconContainer}>{icon}</View> : null}
-      <Text style={[styles.label, styleLabel]}>{label}</Text>
+      {icon ? (
+        <View style={styles.iconContainer}>
+          {React.cloneElement(icon, { color: theme.text })}
+        </View>
+      ) : null}
+      <Text style={[styles.label, { color: labelColor }, styleLabel]}>{label}</Text>
     </Selector>
   );
 };

@@ -1,19 +1,16 @@
 import React from "react";
-import {StyleSheet, Alert } from "react-native";
+import { View, StyleSheet, Alert } from "react-native";
 import ActivityForm from "../../entity/activities/ActivityForm";
 import Screen from "../../layout/Screen";
 import { useActivities } from "../../context/activityContext";
 import { useContext } from "react";
 import { AuthContext } from "../../context/authContext";
-import { useTheme } from "../../context/themeContext";
 
 const ActivityAddScreen = ({ navigation, route }) => {
   // Initialisations ---------------------------------
   const { onAdd } = route.params;
   const { createLocation } = useActivities();
   const { user } = useContext(AuthContext);
-  const { theme } = useTheme();
-
   // State -------------------------------------------
   // Handlers ----------------------------------------
   const handleFormSubmit = async (data) => {
@@ -48,16 +45,19 @@ const ActivityAddScreen = ({ navigation, route }) => {
   // View --------------------------------------------
   return (
     <Screen>
-      <ActivityForm
-        onSubmit={handleFormSubmit}
-        onCancel={() => navigation.goBack()}
-        navigation={navigation}
-      />
+        <ActivityForm
+          onSubmit={handleFormSubmit}
+          onCancel={() => navigation.goBack()}
+          navigation={navigation}
+        />
     </Screen>
   );
 };
 
 const styles = StyleSheet.create({
+  innerContainer: {
+    padding: 10,
+  },
 });
 
 export default ActivityAddScreen;
